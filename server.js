@@ -5,18 +5,17 @@ const mongoose=require('mongoose');
 const app=express();
 
 
-const quiz=require('./routes/quiz-route')
-
 app.use(express.json())
 app.use(require('./routes/user-router.js'))
 app.use(require('./routes/course-route'))
 app.use(require('./routes/lecture-route'))
-app.use(require('./routes/quiz-route'))
 app.use(require('./routes/questions-route'))
-app.use('/quiz',quiz)
-
-
+app.use(require('./routes/quiz-route'))
+app.use('/api',require('./routes/doctors-route'))
+app.use(require('./routes/specialCode-route'))
 app.use(require('./middlware/globalMiddleware'))
+
+
 
 app.use(express.urlencoded({extended:true}));
 app.use(bodyParser.json());

@@ -2,26 +2,64 @@ const router=require('express').Router();
 const Upload=require('../utils/multer')
 const Doctor=require('../Models/doctor-model');
 const Cloudinary=require('../utils/clouodinry')
-const Course=require('../Models/course-model')
+const bcrypt = require("bcrypt")
+const auth=require('../middlware/authMiddleware')
+// const user=require('../Models/user-model')
+const admin=require('../middlware/adminMiddleware')
+const Code=require('../Models/specialCode-model')
 
-router.get("/",async(req,res)=>{
+//signUp
+router.post('/signupp',async(req,res)=>{
+
+  let doctor = await Doctor.findOne({ email: req.body.email });
+    if (doctor) return res.status(400).send("user already exists!");
+   const specialCode= await Code.findOne({code:req.body.code})
+   console.log(specialCode.emailDoc)
+   if(!specialCode||specialCode.emailDoc!="") return res.status(400).send("ckeck your data inputs")
+    const  newdoctor = new Doctor({
+        firstName:req.body.firstName,
+        lastName:req.body.lastName,
+        phoneNumber:req.body.phoneNumber,
+        email:req.body.email,
+        password:req.body.password,
+        code:req.body.code
+    })
+    const salt = await bcrypt.genSalt(10);  
+    specialCode.emailDoc=newdoctor.email
+    await specialCode.save()
+    newdoctor.password = await bcrypt.hash(newdoctor.password, salt);
+   const saveddoctor= await newdoctor.save();
+    //For make the user register and created the token by the way
+    res
+      .header("x-auth-token", newdoctor.generateAuthToken())
+      .status(200)
+      .json(saveddoctor);
+})
+
+router.post("/login",async (req, res) => {
+  //find user by one of his attributes
+  let doctor = await Doctor.findOne({ email: req.body.email });
+  if (!doctor) return res.status(400).send("Email or Password invalid!!");
+
+  const validPassword = await bcrypt.compare(
+    req.body.password,
+    doctor.password
+  );
+  if (!validPassword)
+  return res.status(400).send("Email or Password invalid!!");
+  res.json(doctor.generateAuthToken());
+});
+
+router.get("/",[auth],async(req,res)=>{
     const doctors =await Doctor.find();
     res.json({doctors})
 })
-router.get("/:docId",async(req,res)=>{
+router.get("/:docId",[auth],async(req,res)=>{
   const doctor=await Doctor.findById(req.params.docId).populate("profileimg")
   console.log(doctor)
    res.json({doctor})
 })
 
-  router.post("/dds",async(req,res)=>{
-    const doctor=new Doctor({
-        name:req.body.name, 
-     })
-     const newdoctor=await doctor.save()
-     console.log(newdoctor)
-     res.json({newdoctor})
-}); 
 router.put("/doctorprofile/:id",Upload.single('image'),async (req,res)=>{
   const doctor=await Doctor.findById(req.params.id);
   const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
