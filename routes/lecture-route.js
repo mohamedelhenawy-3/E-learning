@@ -4,9 +4,11 @@ const Lec = require('../Models/lec-model');
 const Course=require('../Models/course-model')
 const Cloudinary=require('../utils/clouodinry')
 const Upload=require('../utils/multer')
+const  ErrorResponse=require('../utils/errorResponse')
 
 router.post('/lec/:courseId', async (req, res) => {
-const course=await Course.findById(req.params.courseId)
+  try{
+    const course=await Course.findById(req.params.courseId)
 console.log(course)
 const lec = new Lec({
         title: req.body.title,
@@ -21,21 +23,30 @@ const lec = new Lec({
         success: true,
         newlec
     })
+  }catch(err){
+    next(err)
+  }
+
 });
 router.put('/lecimg/:id',Upload.single('image'),async(req,res)=>{
+  try{
     const lec =await Lec.findById(req.params.id)
-  const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
-    folder:`E-learning/courses/${lec.courseName}/${lec.title}`
+    const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
+      folder:`E-learning/courses/${lec.courseName}/${lec.title}`
+    })
+    console.log(cloudinay)
+     let updatedLec=lec;
+     updatedLec.img.push({
+      public_id:cloudinay.public_id,
+      url:cloudinay.url
   })
-  console.log(cloudinay)
-   let updatedLec=lec;
-   updatedLec.img.push({
-    public_id:cloudinay.public_id,
-    url:cloudinay.url
-})
-   await updatedLec.save();
-   res.send(updatedLec)
-
+     await updatedLec.save();
+     res.send(updatedLec)
+  
+  }catch(err){
+    next(err)
+  }
+  
 })
 router.put('/lecvedio/:id',Upload.single('file'),async(req,res)=>{
   try{
@@ -53,23 +64,29 @@ router.put('/lecvedio/:id',Upload.single('file'),async(req,res)=>{
  res.send(updatLec)
   
   }catch(err){
-    res.send(err)
+    next(err)
   }
   
   })
   //update data for lec
   router.put("/lecData/:lecId",async(req,res)=>{
-    const updatelecture=await Lec.findOneAndUpdate({"id":req.params.lecId},{
-         $set:{
-              title:req.body.title,
-              desc:req.body.desc      
-         }
-     })
-     res.status(200).json(updatelecture)
+    try{
+      const updatelecture=await Lec.findOneAndUpdate({"id":req.params.lecId},{
+        $set:{
+             title:req.body.title,
+             desc:req.body.desc      
+        }
+    })
+    res.status(200).json(updatelecture)
+    }catch(err){
+      next(err)
+    }
+
  })
  //delete lecture only in spacifice course
  router.delete("/lecture/:lecId/course/:id",async(req,res)=>{
-  const course= await Course.findById(req.params.id)
+  try{
+    const course= await Course.findById(req.params.id)
   console.log(course._id)
   const lecture=await Lec.findById(req.params.lecId)
   console.log(lecture._id)
@@ -86,18 +103,15 @@ router.put('/lecvedio/:id',Upload.single('file'),async(req,res)=>{
     })
 }
 res.status(200).json({Message:"delete lecture successfully"})
-
+  }catch(err){
+    next(err)
+  }
+  
 })
 
 
 
 
-
-
-
-
-
-  
   // router.put('/pdf/:id',Upload.single('file'),async(req,res)=>{
   //    const cloudinay=await Cloudinary.uploader.upload(req.file.path,{folder:"pdf"})
   //   console.log(cloudinay)

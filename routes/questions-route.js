@@ -1,62 +1,88 @@
 const router = require("express").Router();
 const Question = require("../Models/questions-model");
 
-
+const ErrorResponse=require('../utils/errorResponse')
 
 router.get('/',async(req,res)=>{
-   const allquestion=await Question.find();
-   if(!allquestion){
-    res.json({message:"there arent any questions"})
-   }
-   res.json({allquestion})
+    try{
+        const allquestion=await Question.find();
+        if(!allquestion) return next(new ErrorResponse(`no questions`))
+        res.json({allquestion})
+    }catch(err){
+        next(err)
+    }
+
 })
 router.get('/:id',async(req,res)=>{
-    const question=await Question.findById(req.params.id);
-    if(!question){
-        res.json({message:"not found any question"})
+    try{
+        const question=await Question.findById(req.params.id);
+        if(!question) return next(new ErrorResponse(`no question`))
+        res.json({question})
+    }catch(err){
+        next(err)
     }
-    res.json({question})
+   
 })
 
 router.post('/',async(req,res)=>{
-    const question=new Question({
-        title:req.body.title,
-        choose:req.body.choose,
-        mark:req.body.mark
-    })
-    const savedQuestion=await question.save();
-    res.send(savedQuestion);
+    try{
+        const question=new Question({
+            title:req.body.title,
+            choose:req.body.choose,
+            mark:req.body.mark
+        })
+        const savedQuestion=await question.save();
+        res.send(savedQuestion);
+    }catch(err){
+        next(err)
+    }
+
 
 })
 //answer the question and calc the marks
 router.post('/answer/:id',async(req,res)=>{
-    const question= await Question.findById(req.params.id)
-    // console.log(question)
-    const fiest=question.choose.map(t=>{
-        return t.isCorrect
-    })
-    console.log(question.mark) //[true,false]
-   const arr = req.body.arr;
-    if(fiest[arr[0]] == true)
-        res.send(`question mark: ${question.mark}`);
-    else
-        res.send(" question mark :0");
+    try{
+        const question= await Question.findById(req.params.id)
+        // console.log(question)
+        const fiest=question.choose.map(t=>{
+            return t.isCorrect
+        })
+        console.log(question.mark) //[true,false]
+       const arr = req.body.arr;
+        if(fiest[arr[0]] == true)
+            res.send(`question mark: ${question.mark}`);
+        else
+            res.send(" question mark :0");
+    }catch(err){
+        next(err)
+    }
+   
 })
 
 router.get('/answersofquestion',async(req,res)=>{
-    const question=await Question.find()   
-    const descs =question.map(function(i){
-         return i.choose.map(function(v){
-                   return v.isCorrect
-         })
-    })
-   res.send(descs)
+    try{
+        const question=await Question.find()   
+        const descs =question.map(function(i){
+             return i.choose.map(function(v){
+                       return v.isCorrect
+             })
+        })
+       res.send(descs)
+    }catch(err){
+        next(err)
+    }
+
 
 })
 router.delete("/delete/:id", async (req, res) => {
-      const question = await Question.findByIdAndRemove(req.params.id);
-      if (!question) return res.send("no question to delete");
-      res.json({ message: " removed success" });
+    try{
+        const question = await Question.findByIdAndRemove(req.params.id);
+        if (!question) return next(new ErrorResponse(`no question found for delete it `))
+        res.json({ message: " removed success" });
+    }catch(err){
+        next(err)
+    }
+      
   });
 
 

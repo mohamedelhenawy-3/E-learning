@@ -5,7 +5,7 @@ const {
   getCourses,
   postCourse,
   updateCourse,
-  deleteCourse
+  deleteCourse,
 } = require("../Controllers/coursesController");
 
 router.get("/cource/:id",getCourse); 

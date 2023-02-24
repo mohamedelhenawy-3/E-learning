@@ -2,12 +2,19 @@ const Course=require('../Models/course-model')
 const Doctor=require('../Models/doctor-model');
 const Cloudinary=require('../utils/clouodinry')
 const Lecture=require('../Models/lec-model')
+const ErrorResponse=require('../utils/errorResponse')
 
 
 const getCourse=async(req,res) => {
-    const  cource = await Course.findById(req.params.id).populate('lectureId')
-    console.log(cource)
-    res.send(cource)
+    try{    
+    const  course = await Course.findById(req.params.id).populate('lectureId')
+    if(! course)return  next(new ErrorResponse(`Cant find Cours with id ${req.params.id}`))
+    res.status(200).json(course)
+    }
+    catch(err){
+      next(err)
+    }
+
   };
 
 const postCourse=async(req,res)=>{
@@ -25,13 +32,11 @@ const postCourse=async(req,res)=>{
      await doctor.save();
      res.status(200).json({newcourse})
     } catch (err) {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
+      next(err)
     }
 };
 const updateCourse=async (req, res) => {
+  try{
     const course = await Course.findById(req.params.id);
     if (!course.enrolled_std.includes(req.body.userId)) {
       await course.updateOne({ $push: { enrolled_std: req.body.userId } });
@@ -40,30 +45,47 @@ const updateCourse=async (req, res) => {
       await course.updateOne({ $pull: { enrolled_std: req.body.userId } });
       res.status(200).send("out of this course");
     }
+  }catch(err){
+    next(err)
+
+  }
+  
   };
   const deleteCourse=async(req,res)=>{
-    const course=await Course.findById(req.params.courseId).populate("lectureId")
-    if(!course) return "course not found"
-    course.lectureId.map(async lecture=>{
-       await Lecture.findByIdAndDelete(lecture._id)
-   })
-  await Course.findByIdAndRemove(course)
-  if(course.lectureId.length != 0 ){
-  Cloudinary.api.delete_resources_by_prefix(`E-learning/courses/${course.course_name}`, function (err) {
-    if (err && err.http_code !== 404) {
-        return callback(err);
+    try{
+      const course=await Course.findById(req.params.courseId).populate("lectureId")
+      if(!course) return  next(new ErrorResponse(`Cant find Course with id ${req.params.courseId}`))
+      course.lectureId.map(async lecture=>{
+         await Lecture.findByIdAndDelete(lecture._id)
+     })
+    await Course.findByIdAndRemove(course)
+    if(course.lectureId.length != 0 ){
+    Cloudinary.api.delete_resources_by_prefix(`E-learning/courses/${course.course_name}`, function (err) {
+      if (err && err.http_code !== 404) {
+          return callback(err);
+      }
+       Cloudinary.api.delete_folder(`E-learning/courses/${course.course_name}`,function(err,result){
+              console.log(err)
+          });
+        })
     }
-     Cloudinary.api.delete_folder(`E-learning/courses/${course.course_name}`,function(err,result){
-            console.log(err)
-        });
-      })
-  }
+    }
+    catch(err){
+      next(err)
+    }
+   
 }
 const getCourses=async(req,res)=>{
-  const course= await Course.find();
-  if(!course) return "courses not found"
-
-  res.status(200).json({course})
+  try{
+    const course= await Course.find();
+    if(!course) return next(new ErrorResponse(`Cant find any Courses`))
+  
+    res.status(200).json({course})
+  }
+  catch(err){
+    next(err)
+  }
+ 
 }
   module.exports = {
     getCourse,
