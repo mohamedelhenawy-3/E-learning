@@ -5,8 +5,9 @@ const Course=require('../Models/course-model')
 const Cloudinary=require('../utils/clouodinry')
 const Upload=require('../utils/multer')
 const  ErrorResponse=require('../utils/errorResponse')
+const auth=require('../middlware/authMiddleware')
 
-router.post('/lec/:courseId', async (req, res) => {
+router.post('/lec/:courseId',[auth],async (req, res,next) => {
   try{
     const course=await Course.findById(req.params.courseId)
 console.log(course)
@@ -28,7 +29,7 @@ const lec = new Lec({
   }
 
 });
-router.put('/lecimg/:id',Upload.single('image'),async(req,res)=>{
+router.put('/lecimg/:id',[auth],Upload.single('image'),async(req,res,next)=>{
   try{
     const lec =await Lec.findById(req.params.id)
     const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
@@ -48,7 +49,7 @@ router.put('/lecimg/:id',Upload.single('image'),async(req,res)=>{
   }
   
 })
-router.put('/lecvedio/:id',Upload.single('file'),async(req,res)=>{
+router.put('/lecvedio/:id',[auth],Upload.single('file'),async(req,res,next)=>{
   try{
     const lec =await Lec.findById(req.params.id)
     const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
@@ -69,7 +70,7 @@ router.put('/lecvedio/:id',Upload.single('file'),async(req,res)=>{
   
   })
   //update data for lec
-  router.put("/lecData/:lecId",async(req,res)=>{
+  router.put("/lecData/:lecId",[auth],async(req,res,next)=>{
     try{
       const updatelecture=await Lec.findOneAndUpdate({"id":req.params.lecId},{
         $set:{
@@ -84,7 +85,7 @@ router.put('/lecvedio/:id',Upload.single('file'),async(req,res)=>{
 
  })
  //delete lecture only in spacifice course
- router.delete("/lecture/:lecId/course/:id",async(req,res)=>{
+ router.delete("/lecture/:lecId/course/:id",[auth],async(req,res)=>{
   try{
     const course= await Course.findById(req.params.id)
   console.log(course._id)

@@ -6,7 +6,7 @@ const  ErrorResponse=require('../utils/errorResponse')
 
 
 //add revieww 
-router.post('/:courseId/reviews',[auth],async(req,res)=>{
+router.post('/:courseId/reviews',[auth],async(req,res,next)=>{
     try{
         req.body.course=req.params.courseId
         console.log(req.params.courseId)

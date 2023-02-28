@@ -9,9 +9,9 @@ const admin=require('../middlware/adminMiddleware')
 const Code=require('../Models/specialCode-model')
 const ErrorResponse=require('../utils/errorResponse')
 //signUp
-router.post('/signupp',async(req,res)=>{
+router.post('/signup',async(req,res,next)=>{
 try{  let doctor = await Doctor.findOne({ email: req.body.email });
-if (doctor) return next(new ErrorResponse(`account is already exists`))
+if (doctor) return next(new ErrorResponse(`email or pass omvalid `))
 const specialCode= await Code.findOne({code:req.body.code})
 console.log(specialCode.emailDoc)
 if(!specialCode||specialCode.emailDoc!="") return next(new ErrorResponse(`check you input data`))
@@ -21,14 +21,17 @@ const  newdoctor = new Doctor({
     phoneNumber:req.body.phoneNumber,
     email:req.body.email,
     password:req.body.password,
-    code:req.body.code
+    code:req.body.code,
+    dateOfBirth:req.body.dateOfBirth,
+    jobTitle:req.body.jobTitle,
+    country:req.body.jobTitle
+  
 })
 const salt = await bcrypt.genSalt(10);  
 specialCode.emailDoc=newdoctor.email
 await specialCode.save()
 newdoctor.password = await bcrypt.hash(newdoctor.password, salt);
 const saveddoctor= await newdoctor.save();
-//For make the user register and created the token by the way
 res
   .header("x-auth-token", newdoctor.generateAuthToken())
   .status(200)
@@ -39,7 +42,7 @@ res
 
 })
 
-router.post("/login",async (req, res) => {
+router.post("/login",async (req, res,next) => {
   try{
       //find user by one of his attributes
   let doctor = await Doctor.findOne({ email: req.body.email });
@@ -57,7 +60,7 @@ router.post("/login",async (req, res) => {
 
 });
 
-router.get("/",[auth],async(req,res)=>{
+router.get("/",[auth],async(req,res,next)=>{
   try{
     const doctors =await Doctor.find();
     if(!doctors) return  next(new ErrorResponse(`cant find any doctors`))
@@ -67,7 +70,7 @@ router.get("/",[auth],async(req,res)=>{
   }
   
 })
-router.get("/:docId",[auth],async(req,res)=>{
+router.get("/:docId",[auth],async(req,res,next)=>{
   try{
     const doctor=await Doctor.findById(req.params.docId).populate("profileimg")
     console.log(doctor)
@@ -79,7 +82,7 @@ router.get("/:docId",[auth],async(req,res)=>{
 
 })
 
-router.put("/doctorprofile/:id",Upload.single('image'),async (req,res)=>{
+router.put("/doctorprofile/:id",[auth],Upload.single('image'),async (req,res,next)=>{
   try{
     const doctor=await Doctor.findById(req.params.id);
     const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
@@ -98,7 +101,7 @@ router.put("/doctorprofile/:id",Upload.single('image'),async (req,res)=>{
 
  
   })
-  router.put("/docData/:docId",async(req,res)=>{
+  router.put("/docData/:docId",[auth],async(req,res,next)=>{
     try{
        const updatedoctor=await Doctor.findOneAndUpdate({"id":req.params.docId},{
       $set:{

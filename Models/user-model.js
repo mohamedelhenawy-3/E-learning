@@ -2,24 +2,7 @@ const mongoose = require('mongoose');
 const jwt = require("jsonwebtoken");
 const Schema = mongoose.Schema;
 const userSchema = new Schema({
-   name:{
-     type:String
-   },
-   cloudinary_id:{
-    type:String
-   },
-   url:{
-   type:String
-   },
-   enroll_cours:{
-      type:Schema.Types.ObjectId,
-      ref:"Course"
-   },
-   infoQuiz:[{quizId:{
-      type:String},usermark:{
-      type:String
-      }
-}], firstName: {
+   firstName: {
    type: String,
    required: true,
    min: 0,
@@ -33,25 +16,62 @@ const userSchema = new Schema({
  },
  phoneNumber: {
    type: String,
-   required: true,
+   required:[true,"Please write you phone number"],
    length: 11,
  },
+ country:{
+  type:String
+
+ },
+ jobTitle:{
+  type:String
+ },
+ dateOfBirth: {
+  type: Date,
+  required: true,
+  trim: true,
+},
  email: {
    type: String,
-   required: true,
+   required:[true,"Please write your email as example@gmail.com"],
    unique: true,
    min: 1,
    max: 255,
  },
  password: {
    type: String,
-   required: true,
+   required:[true,"Please write and charactar-number"],
    min: 5,
    max: 1500,
  },
+ name:{
+  type:String
+},
+cloudinary_id:{
+ type:String
+},
+url:{
+type:String
+},
+enrolled_Courses:{
+   type:Schema.Types.ObjectId,
+   ref:"Course"
+},
+infoQuizs:[{quizId:{
+   type:String},
+   usermark:{
+   type:String
+   }
+}],
  isAdmin:{type:Boolean,
           default:false},
-//  specialCode:[{
+ createdAt:{
+       type:Date,
+      defult:Date.now()
+         }
+          
+          
+          //  specialCode:[{
 //    email:{
 //        type:String,
 //        default:" "

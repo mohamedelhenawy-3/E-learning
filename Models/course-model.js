@@ -7,11 +7,15 @@ const userSchema = new Schema({
   doctorName: {
     type: String,
   },
-  desc: {
+  description: {
     type: String,
   },
   mark: {
     type: Number,
+  },
+  createdAt:{
+     type:Date,
+    defult:Date.now()
   },
   enrolled_std: {
     type: Array,

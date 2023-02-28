@@ -38,6 +38,10 @@ const lecSchema = new Schema({
           },
         },
       ],
+      createdAt:{
+        type:Date,
+       defult:Date.now()
+          },
       courseName:{
         type:String
       }

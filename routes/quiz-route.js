@@ -4,7 +4,7 @@ const Quiz = require("../Models/quiz.model");
 const Doctor=require('../Models/doctor-model')
 const User=require('../Models/user-model')
 const  ErrorResponse=require('../utils/errorResponse')
-router.post('/:docId',async(req,res)=>{
+router.post('/:docId',async(req,res,next)=>{
 
     try{
         const questionsId=Promise.all(req.body.questions.map(async question=>{
@@ -37,7 +37,7 @@ router.post('/:docId',async(req,res)=>{
     //idsquestion
 
 })
-router.get('/:Quizid',async(req,res)=>{
+router.get('/:Quizid',async(req,res,next)=>{
     try{
         const quiz=await Quiz.findById(req.params.Quizid).populate('questions')
         if(!quiz) return "you dont have any quiz "
@@ -48,7 +48,7 @@ router.get('/:Quizid',async(req,res)=>{
    }
 
 })
-router.post('/studentanswer/:id/student/:stdid',async(req,res)=>{
+router.post('/studentanswer/:id/student/:stdid',async(req,res,next)=>{
     try{
         const quiz=await Quiz.findById(req.params.id).populate('questions').select('questions')
         const user=await User.findById(req.params.stdid)
@@ -80,7 +80,7 @@ router.post('/studentanswer/:id/student/:stdid',async(req,res)=>{
     
 })
 // deletequiz
-router.delete('quiz/:quizId',async(req,res)=>{
+router.delete('quiz/:quizId',async(req,res,next)=>{
     try{
         const quiz=await  Quiz.findById(req.params.id)
         quiz.questions.map(questionss=>{

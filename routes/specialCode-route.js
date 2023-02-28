@@ -9,9 +9,9 @@ const  ErrorResponse=require('../utils/errorResponse')
 function getRandom(length) {
     return Math.floor(Math.pow(10, length-1) + Math.random() * 9 * Math.pow(10, length-1));
     }
-router.post('/specialcode/:id',[auth,admin],async(req,res)=>{
+router.post('/:id',[auth,admin],async(req,res,next)=>{
     try{
-        const user=await User.findById(req.params.id)
+    const user=await User.findById(req.params.id)
    const code =new Code({
         code:getRandom(9),
         emailadmin:user._id

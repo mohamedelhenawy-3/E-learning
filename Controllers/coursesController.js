@@ -24,7 +24,7 @@ const postCourse=async(req,res)=>{
     const course=new Course({
             course_name:req.body.course_name,
             doctor:doctor.doctorName,
-            desc:req.body.desc,
+            description:req.body.description,
      })
      const newcourse=await course.save();
      console.log(newcourse._id)

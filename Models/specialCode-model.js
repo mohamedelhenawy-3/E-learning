@@ -11,7 +11,11 @@ const specialcodeSchema = new Schema({
         },
         code:{
             type:String
-        }
+        },
+        createdAt:{
+            type:Date,
+           defult:Date.now()
+         }
       
 
 });

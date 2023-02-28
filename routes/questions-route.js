@@ -24,7 +24,7 @@ router.get('/:id',async(req,res)=>{
    
 })
 
-router.post('/',async(req,res)=>{
+router.post('/',async(req,res,next)=>{
     try{
         const question=new Question({
             title:req.body.title,
@@ -40,7 +40,7 @@ router.post('/',async(req,res)=>{
 
 })
 //answer the question and calc the marks
-router.post('/answer/:id',async(req,res)=>{
+router.post('/answer/:id',async(req,res,next)=>{
     try{
         const question= await Question.findById(req.params.id)
         // console.log(question)
@@ -59,7 +59,7 @@ router.post('/answer/:id',async(req,res)=>{
    
 })
 
-router.get('/answersofquestion',async(req,res)=>{
+router.get('/answersofquestion',async(req,res,next)=>{
     try{
         const question=await Question.find()   
         const descs =question.map(function(i){
@@ -74,7 +74,7 @@ router.get('/answersofquestion',async(req,res)=>{
 
 
 })
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", async (req, res,next) => {
     try{
         const question = await Question.findByIdAndRemove(req.params.id);
         if (!question) return next(new ErrorResponse(`no question found for delete it `))

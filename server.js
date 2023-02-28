@@ -8,26 +8,25 @@ const errorHandler=require('./middlware/globalMiddleware')
 app.use(express.json())
 app.use(express.urlencoded({extended:true}));
 app.use(bodyParser.json());
-
-app.use(require('./routes/user-router.js'))
-app.use(require('./routes/course-route'))
-app.use(require('./routes/lecture-route'))
-app.use(require('./routes/questions-route'))
-app.use(require('./routes/quiz-route'))
-app.use('/api',require('./routes/doctors-route'))
-app.use(require('./routes/specialCode-route'))
-app.use(require('./routes/review-route'))
-
-
- 
+app.use('/api/user',require('./routes/user-router.js'))
+app.use('/api/course',require('./routes/course-route'))
+app.use('/api/lecture',require('./routes/lecture-route'))
+app.use('/api/question',require('./routes/questions-route'))
+app.use('/api/quiz',require('./routes/quiz-route'))
+app.use('/api/doctor',require('./routes/doctors-route'))
+app.use('/api/specialCode',require('./routes/specialCode-route'))
+app.use('/api/review',require('./routes/review-route'))
+// /mongodb+srv://henawii:26112000@cluster0.5yxqswc.mongodb.net/vv
 app.use(errorHandler)
-const port=process.env.PORT;
-mongoose.connect(process.env.CONNECTION_STRING )
+const url="mongodb+srv://henawii:26112000@cluster0.5yxqswc.mongodb.net/elearning1"
+const port=3000;
+mongoose.connect(url,{})
 .then((result)=>{
-  app.listen(port,()=>{
-    console.log( `the sever run in ${port}`);
-  })
+      console.log("database connected")
 })
 .catch((err)=>{
   console.log(err);
 });
+app.listen(port,()=>{
+  console.log( `the sever run in ${port}`);
+})

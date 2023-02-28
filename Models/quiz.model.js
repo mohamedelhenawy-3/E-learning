@@ -13,10 +13,13 @@ const quizSchema=new Schema({
     
  }],
  doctorName:{String}
+ ,
+ createdAt:{
+   type:Date,
+   defult:Date.now()
+     }
 },
-{
-    timestamps:true
-}
+
 
 );
 

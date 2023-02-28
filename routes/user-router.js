@@ -9,7 +9,7 @@ const Cloudinary=require('../utils/clouodinry')
 const Upload=require('../utils/multer')
 const  ErrorResponse=require('../utils/errorResponse')
 //signUp..
-router.post("/sigup", async (req, res) => {  
+router.post("/signup", async (req, res,next) => {  
     //find one search in db if the customer in db or no if find send aleady exist 
     try{
       
@@ -20,14 +20,18 @@ router.post("/sigup", async (req, res) => {
          "firstName",
          "lastName",
          "phoneNumber",
+         "dateOfBirth",
+         "jobTitle",
+         "country",
          "email",
-         "password",
+         "password"
        ])
      );
-     
-     const salt = await bcrypt.genSalt(10);                    //#####RRRTTRTWRTRjkbhwuigybvrfhjvuer###%#
+                  //#####RRRTTRTWRTRjkbhwuigybvrfhjvuer###%#
    
      //salt for add ######## when using hash pass 
+          
+     const salt = await bcrypt.genSalt(10);  
      user.password = await bcrypt.hash(user.password, salt);
     const saveduser= await user.save();
    
@@ -41,7 +45,7 @@ router.post("/sigup", async (req, res) => {
     }
   });
   //login
-  router.post("/login",async (req, res) => {
+  router.post("/login",async (req, res,next) => {
     try{
      //find user by one of his attributes
   let user = await User.findOne({ email: req.body.email });
@@ -59,7 +63,7 @@ router.post("/sigup", async (req, res) => {
   
 });
 //upload images or files
-router.post('/user',[auth],async(req,res)=>{
+router.post('/',[auth],async(req,res,next)=>{
   try{
   
     const user=new User({
@@ -74,7 +78,7 @@ router.post('/user',[auth],async(req,res)=>{
   }
 })
 
-router.get('/user',[auth],async(req,res)=>{
+router.get('/',[auth],async(req,res,next)=>{
   try{
     const user=await User.find()
     if(!user)   return  next(new ErrorResponse(`cant find that user`))
@@ -84,14 +88,17 @@ router.get('/user',[auth],async(req,res)=>{
   }
     
 })
-router.put('/user/:id',[auth],Upload.single('image'),async(req,res)=>{
+router.put('/:id',[auth],Upload.single('image'),async(req,res,next)=>{
   try{
     const cloudinay=await Cloudinary.uploader.upload(req.file.path)
     return  findOneAndUpdate({"id":req.params.id},{
         $set:{
-            name:req.params.id,
             cloudinary_id:cloudinay.public_id,
-            url:cloudinay.url
+            url:cloudinay.url,
+            phoneNumber:req.body.phoneNumber,
+            dateOfBirth:req.body.dateOfBirth,
+            jobTitle:req.body.jobTitle,
+            country:req.country,
         }
     })
   }catch(err){
@@ -107,7 +114,7 @@ function getRandom(length) {
   //ratingfortheCourse
 
 //update for special code 
-router.put('/specialcode/:id',[auth,admin],async(req,res)=>{
+router.put('/:id',[auth,admin],async(req,res)=>{
   try{
     const user=await User.findById(req.params.id)
     let updateuser= user

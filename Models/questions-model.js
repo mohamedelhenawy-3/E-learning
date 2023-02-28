@@ -19,11 +19,14 @@ const questionSchema=new Schema({
  mark:{
     type:Number,
     required:true
+ },
+ createdAt:{
+    type:Date,
+   defult:Date.now()
  }
-},
-{
-    timestamps:true
 }
+
+
 
 );
 

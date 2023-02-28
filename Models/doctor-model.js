@@ -20,7 +20,20 @@ const doctorSchema = new Schema({
     length: 11,
   },
   code:{
-  type:String
+  type:String,
+  required:[true,"Please write an in valid code DD-MM-YYYY"]
+  },
+  country:{
+    type:String
+  
+   },
+   jobTitle:{
+    type:String
+   },
+   dateOfBirth: {
+    type: Date,
+    required: [true,"Please write an in valid date DD-MM-YYYY"],
+    trim: true,
   },
   email: {
     type: String,
