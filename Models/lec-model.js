@@ -1,11 +1,13 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const lecSchema = new Schema({
-
+  duration:{
+     type:Number
+  },
       title: {
         type: String,
       },
-      desc: {
+      description: {
         type: String,
       },
       decument: [

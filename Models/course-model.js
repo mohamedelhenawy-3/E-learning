@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const userSchema = new Schema({
-  course_name: {
+  courseName: {
     type: String,
   },
   doctorName: {
@@ -17,10 +17,12 @@ const userSchema = new Schema({
      type:Date,
     defult:Date.now()
   },
-  enrolled_std: {
-    type: Array,
-    default: [],
-  },
+  enroll: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
    lectureId: [{
     type: mongoose.Types.ObjectId,
          ref:"Lec"

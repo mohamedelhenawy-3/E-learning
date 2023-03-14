@@ -16,13 +16,12 @@ const getCourse=async(req,res) => {
     }
 
   };
-
 const postCourse=async(req,res)=>{
   try {
     const doctor=await Doctor.findById(req.params.docId)
     console.log(doctor._id)
     const course=new Course({
-            course_name:req.body.course_name,
+            courseName:req.body.courseName,
             doctor:doctor.doctorName,
             description:req.body.description,
      })
@@ -38,8 +37,8 @@ const postCourse=async(req,res)=>{
 const updateCourse=async (req, res) => {
   try{
     const course = await Course.findById(req.params.id);
-    if (!course.enrolled_std.includes(req.body.userId)) {
-      await course.updateOne({ $push: { enrolled_std: req.body.userId } });
+    if (!course.enroll.includes(req.body.userId)) {
+      await course.updateOne({ $push: { enroll: req.body.userId } });
       res.status(200).send("enroll success in this course");
     } else {
       await course.updateOne({ $pull: { enrolled_std: req.body.userId } });
@@ -49,8 +48,10 @@ const updateCourse=async (req, res) => {
     next(err)
 
   }
-  
   };
+
+
+
   const deleteCourse=async(req,res)=>{
     try{
       const course=await Course.findById(req.params.courseId).populate("lectureId")

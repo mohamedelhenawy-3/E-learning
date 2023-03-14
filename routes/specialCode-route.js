@@ -12,12 +12,12 @@ function getRandom(length) {
 router.post('/:id',[auth,admin],async(req,res,next)=>{
     try{
     const user=await User.findById(req.params.id)
+    console.log(user)
    const code =new Code({
         code:getRandom(9),
-        emailadmin:user._id
+        emailadmin:user.email
    })
    const savedcode=await code.save();
-   console.log(savedcode)
    res.json(savedcode)
     }catch(err){
         next(err)

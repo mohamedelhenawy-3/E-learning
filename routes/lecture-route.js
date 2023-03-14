@@ -4,26 +4,30 @@ const Lec = require('../Models/lec-model');
 const Course=require('../Models/course-model')
 const Cloudinary=require('../utils/clouodinry')
 const Upload=require('../utils/multer')
-const  ErrorResponse=require('../utils/errorResponse')
+// const  ErrorResponse=require('../utils/errorResponse')
 const auth=require('../middlware/authMiddleware')
+const {sendNotify}=require('../utils/sendNotifications')
+// const {calculateDuration, getDuration}=require('../utils/calculateDuration')
 
+const { getVideoDurationInSeconds } = require('get-video-duration')
 router.post('/lec/:courseId',[auth],async (req, res,next) => {
   try{
     const course=await Course.findById(req.params.courseId)
-console.log(course)
-const lec = new Lec({
+    const users=course.enroll
+    console.log(course.enroll)
+    const lec = new Lec({
         title: req.body.title,
-        desc: req.body.desc,
-        courseName:course.course_name
+        description: req.body.description,
+        courseName:course.courseName
     })
     const newlec = await lec.save();
     console.log(newlec)
     course.lectureId.push(newlec._id)
     await course.save()
-    res.status(200).json({
-        success: true,
-        newlec
-    })
+    const sent = await sendNotify(users, 'there is change in your lecture');
+    if(sent){
+        return res.json({message:"notify send success",users,newlec})
+   }
   }catch(err){
     next(err)
   }
@@ -39,7 +43,8 @@ router.put('/lecimg/:id',[auth],Upload.single('image'),async(req,res,next)=>{
      let updatedLec=lec;
      updatedLec.img.push({
       public_id:cloudinay.public_id,
-      url:cloudinay.url
+      url:cloudinay.url,
+
   })
      await updatedLec.save();
      res.send(updatedLec)
@@ -49,20 +54,23 @@ router.put('/lecimg/:id',[auth],Upload.single('image'),async(req,res,next)=>{
   }
   
 })
-router.put('/lecvedio/:id',[auth],Upload.single('file'),async(req,res,next)=>{
+router.put('/:id',[auth],Upload.single('file'),async(req,res,next)=>{
   try{
     const lec =await Lec.findById(req.params.id)
+    console.log(lec._id)
+    console.log(req.file)
     const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
-      folder:`E-learning/courses/${lec.courseName}/${lec.title}`
+      folder:`E-learning/courses/${lec.courseName}/${lec.title}`,
+      resource_type:"video"
     })
-    console.log(cloudinay)
-    const  updatedLec=lec;
+
+    let  updatedLec=lec;
     updatedLec.vedios.push({
      public_id:cloudinay.public_id,
-     url:cloudinay.url
+     url:cloudinay.url,
  })
- const updatLec= await updatedLec.save();
- res.send(updatLec)
+ await updatedLec.save();
+ res.send(updatedLec)
   
   }catch(err){
     next(err)

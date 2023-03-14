@@ -16,9 +16,11 @@ app.use('/api/quiz',require('./routes/quiz-route'))
 app.use('/api/doctor',require('./routes/doctors-route'))
 app.use('/api/specialCode',require('./routes/specialCode-route'))
 app.use('/api/review',require('./routes/review-route'))
+app.use('/api/notification',require('./routes/notification-route'))
+
 // /mongodb+srv://henawii:26112000@cluster0.5yxqswc.mongodb.net/vv
 app.use(errorHandler)
-const url="mongodb+srv://henawii:26112000@cluster0.5yxqswc.mongodb.net/elearning1"
+const url="mongodb+srv://max:10112000@cluster0.xdpxd.mongodb.net/Elearning?retryWrites=true&w=majority"
 const port=3000;
 mongoose.connect(url,{})
 .then((result)=>{

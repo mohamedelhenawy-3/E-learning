@@ -83,6 +83,6 @@ infoQuizs:[{quizId:{
 });
 userSchema.methods.generateAuthToken = function () {
    //return token idd and when admin it will return id and isAdmin:true
-   return jwt.sign({ id: this._id,isAdmin: this.isAdmin}, "privateKey"); //returns token
+   return jwt.sign({ id: this._id, isAdmin: this.isAdmin}, "privateKey"); //returns token
  };
 module.exports = mongoose.model("User", userSchema);
