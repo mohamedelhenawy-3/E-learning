@@ -9,7 +9,6 @@ const  ErrorResponse=require('../utils/errorResponse')
 const auth=require('../middlware/authMiddleware')
 const {sendNotify}=require('../utils/sendNotifications')
 // const {calculateDuration, getDuration}=require('../utils/calculateDuration')
-
 const { getVideoDurationInSeconds } = require('get-video-duration')
 router.post('/lec/:courseId/:docId',[auth],async (req, res,next) => {
   try{
@@ -17,10 +16,11 @@ router.post('/lec/:courseId/:docId',[auth],async (req, res,next) => {
     const doctor=await Doctor.findById(req.params.docId)
 
     const users=course.enroll
-    console.log(course._id)
-    console.log('2')
+  
+console.log(course.doctorData.doctorId)
+console.log(req.user.id)
 
-    if(req.user._id == course.doctorData.doctorId){
+    if(req.user.id == course.doctorData.doctorId){
       let lec = await Lec.findOne({ title: req.body.title });
       if (lec) return next(new ErrorResponse(`the lecture already existed`))
         lec = new Lec({
@@ -32,9 +32,7 @@ router.post('/lec/:courseId/:docId',[auth],async (req, res,next) => {
                doctorId:doctor._id
            },
        })
-       console.log('33')
        const newlec = await lec.save();
-       console.log(newlec)
        course.lectureId.push(newlec._id)
        await course.save()
        const sent = await sendNotify(users, 'there is change in your lecture');
@@ -70,40 +68,94 @@ router.put('/lecimg/:id',[auth],Upload.single('image'),async(req,res,next)=>{
   }
   
 })
-router.put('/:id',[auth],Upload.single('file'),async(req,res,next)=>{
-  try{
+// router.put('/:id',[auth],Upload.single('file'),async(req,res,next)=>{
+//   try{
     
-    const lec =await Lec.findById(req.params.id)
+//     const lec =await Lec.findById(req.params.id)
 
-    if(req.user._id == lec.doctorData.docId){
-    const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
-      folder:`E-learning/courses/${lec.courseName}/${lec.title}`,
-      resource_type:"video"
-    })
+//     if(req.user._id == lec.doctorData.docId){
+//     const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
+//       folder:`E-learning/courses/${lec.courseName}/${lec.title}`,
+//       resource_type:"video"
+//     })
 
-    let  updatedLec=lec;
-    updatedLec.vedios.push({
-     public_id:cloudinay.public_id,
-     url:cloudinay.url,
- })
- await updatedLec.save();
- res.send(updatedLec)
-  }else{
-  res.send('you should update in your own lecture')
-  }
+//     let  updatedLec=lec;
+//     updatedLec.vedios.push({
+//      public_id:cloudinay.public_id,
+//      url:cloudinay.url,
+//  })
+//  await updatedLec.save();
+//  res.send(updatedLec)
+//   }else{
+//   res.send('you should update in your own lecture')
+//   }
   
-  }catch(err){
+//   }catch(err){
+//     next(err)
+//   }
+  
+//   })
+router.put('/:id', [auth], Upload.array('files', 1), async (req, res, next) => {
+  try {
+    const lec = await Lec.findById(req.params.id)
+    console.log(req.files)
+    if (req.user.id == lec.doctorData.doctorId) {
+      const videoss = [];
+
+      if (Array.isArray(req.files)) {
+        for (let i = 0; i < req.files.length; i++) {
+          const cloudinary = await Cloudinary.uploader.upload(req.files[i].path, {
+            folder: `E-learning/courses/${lec.courseName}/${lec.title}`,
+            resource_type: "video"
+          })
+       console.log(req.files[0].path)
+          videoss.push({
+            public_id: cloudinary.public_id,
+            url: cloudinary.url,
+          });
+          console.log('3')
+        }
+      }
+      else if (req.file) {
+        const cloudinary = await Cloudinary.uploader.upload(req.files.path, {
+          folder: `E-learning/courses/${lec.courseName}/${lec.title}`,
+          resource_type: "video"
+        })
+        console.log("455")
+
+        videoss.push({
+          public_id: cloudinary.public_id,
+          url: cloudinary.url,
+        });
+      }
+      const updatedLec = lec;
+      updatedLec.vedios.push(...videoss);
+      const x= await updatedLec.save();
+      const sent = await sendNotify(users, 'there is change in your lecture');
+      if(sent){
+          return res.json({message:"notify send success",users,x})
+     }else{
+       res.json({message:"this lecture not related to this course"})
+     }
+    
+    } else {
+      res.send('you should update in your own lecture')
+    }
+
+  } catch (err) {
     next(err)
   }
-  
-  })
+
+});
+
+
   //update data for lec
   router.put("/lectureData/:lecId",[auth],async(req,res,next)=>{
 
     
     try{
       const lecture=await Lec.findById(req.params.lecId)
-      if(req.user._id == lecture.doctorData.docId){
+      if(req.user.id == lecture.doctorData.docId){
         const updatelecture=await Lec.findOneAndUpdate({"id":lecture._id},{
           $set:{
                title:req.body.title,
@@ -126,15 +178,15 @@ router.put('/:id',[auth],Upload.single('file'),async(req,res,next)=>{
   const course= await Course.findById(req.params.id)
   const lecture=await Lec.findById(req.params.lecId)
   console.log(lecture._id)
-  if(req.user._id == course.doctorData.doctorId && req.user._id == lecture.doctorData.docId){
+  if(req.user.id == course.doctorData.doctorId && req.user.id == lecture.doctorData.docId){
     if(!lecture)  "course not found"
     await Lec.findByIdAndRemove(lecture)
     if(lecture.length != 0 ){
-    Cloudinary.api.delete_resources_by_prefix(`E-learning/courses/${course.course_name}/${lecture.title}`, function (err) {
+    Cloudinary.api.delete_resources_by_prefix(`E-learning/courses/${course.courseName}/${lecture.title}`, function (err) {
     if (err && err.http_code !== 404) {
         return callback(err);
     }
-     Cloudinary.api.delete_folder(`E-learning/courses/${course.course_name}/${lecture.title}`,function(err,result){
+     Cloudinary.api.delete_folder(`E-learning/courses/${course.courseName}/${lecture.title}`,function(err,result){
             console.log(err)
         });
       })
@@ -163,8 +215,6 @@ router.put('/:id',[auth],Upload.single('file'),async(req,res,next)=>{
   //   })
   //   await updatedLec.save();
   //   res.send(updatedLec)
-  
- 
   // })
 
 module.exports = router;

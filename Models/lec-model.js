@@ -45,14 +45,12 @@ const lecSchema = new Schema({
        defult:Date.now()
           },
       doctorData:{
-        doctorName:{
          doctorName:{
           type:String
          },
          doctorId:{
           type:String
          }
-      }
     }
     ,courseName:{
       type:String
