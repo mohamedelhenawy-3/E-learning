@@ -95,49 +95,34 @@ router.put('/lecimg/:id',[auth],Upload.single('image'),async(req,res,next)=>{
 //   }
   
 //   })
-router.put('/:id', [auth], Upload.array('files', 1), async (req, res, next) => {
+router.put('/:id', [auth], Upload.array('files'), async (req, res, next) => {
   try {
     const lec = await Lec.findById(req.params.id)
     console.log(req.files)
     if (req.user.id == lec.doctorData.doctorId) {
       const videoss = [];
 
-      if (Array.isArray(req.files)) {
-        for (let i = 0; i < req.files.length; i++) {
-          const cloudinary = await Cloudinary.uploader.upload(req.files[i].path, {
-            folder: `E-learning/courses/${lec.courseName}/${lec.title}`,
-            resource_type: "video"
-          })
-       console.log(req.files[0].path)
-          videoss.push({
-            public_id: cloudinary.public_id,
-            url: cloudinary.url,
-          });
-          console.log('3')
-        }
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({error: 'No files uploaded'})
       }
-      else if (req.file) {
-        const cloudinary = await Cloudinary.uploader.upload(req.files.path, {
+
+      for (let i = 0; i < req.files.length; i++) {
+        const cloudinary = await Cloudinary.uploader.upload(req.files[i].path, {
           folder: `E-learning/courses/${lec.courseName}/${lec.title}`,
           resource_type: "video"
         })
-        console.log("455")
 
         videoss.push({
           public_id: cloudinary.public_id,
           url: cloudinary.url,
         });
       }
+
       const updatedLec = lec;
       updatedLec.vedios.push(...videoss);
       const x= await updatedLec.save();
-      const sent = await sendNotify(users, 'there is change in your lecture');
-      if(sent){
-          return res.json({message:"notify send success",users,x})
-     }else{
-       res.json({message:"this lecture not related to this course"})
-     }
-    
+       res.json({message:"updated succefully",x})
+
     } else {
       res.send('you should update in your own lecture')
     }
@@ -145,8 +130,8 @@ router.put('/:id', [auth], Upload.array('files', 1), async (req, res, next) => {
   } catch (err) {
     next(err)
   }
-
 });
+
 
 
   //update data for lec

@@ -77,26 +77,34 @@ router.get("/:docId",[auth],async(req,res,next)=>{
   }
 
 })
+router.put("/doctorprofile/:id", [auth], Upload.single('image'), async (req, res, next) => {
+  try {
+    const doctor = await Doctor.findById(req.params.id);
 
-router.put("/doctorprofile/:id",[auth],Upload.single('image'),async (req,res,next)=>{
-  try{
-    const doctor=await Doctor.findById(req.params.id);
-    const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
-      folder:`${doctor._id}` })
-  
-     const updateDoc=doctor
-     updateDoc.profileimg.push({
-          public_id:cloudinay.public_id,
-          url:cloudinay.url
-      })
-      const updateDoctors=await updateDoc.save()
-      res.status(200).json({updateDoctors})
-  }catch(err){
-      next(err)
+    const cloudinary = await Cloudinary.uploader.upload(req.file.path, {
+      folder: `${doctor._id}`
+    })
+
+    const updateDoc = doctor;
+    if (updateDoc.profileimg) {
+      updateDoc.profileimg.public_id = cloudinary.public_id;
+      updateDoc.profileimg.url = cloudinary.url;
+    } else {
+      updateDoc.profileimg = {
+        public_id: cloudinary.public_id,
+        url: cloudinary.url
+      };
+    }
+
+    const updateDoctors = await updateDoc.save();
+    res.status(200).json({
+      updateDoctors
+    });
+  } catch (err) {
+    next(err)
   }
+});
 
- 
-  })
   router.put("/docData/:docId",[auth],async(req,res,next)=>{
     try{
        const updatedoctor=await Doctor.findOneAndUpdate({"id":req.params.docId},{

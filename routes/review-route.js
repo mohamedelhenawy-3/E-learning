@@ -26,8 +26,47 @@ router.post('/:courseId/reviews',[auth],async(req,res,next)=>{
     
 })
 
+router.get('/:id/reviews', async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const course = await Course.findById(courseId);
+    const courseID=course._id
+    const reviews = await Review.find({ course: courseId });
+    const averageRating = course.averageRating;
+    res.status(200).json({
+      success: true,
+      data: {
+        courseID,
+        reviews,
+        averageRating
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: 'Server Error' });
+  }
+})
+ //only rate for the couse without any data 
+ router.get('/:id/averagerating',async(req,res)=>{
+    try{
+        const courseId = req.params.id;
+        const course = await Course.findById(courseId);
+        const courseID=course._id
+        const averageRating = course.averageRating;
+        res.status(200).json({
+            success: true,
+            data: {
+              courseID,
+              averageRating
+            }
+          });
+    }catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, error: 'Server Error' });
+      }
 
-
+  
+ })
 
 
 

@@ -36,14 +36,14 @@ const doctorSchema = new Schema({
     type: String,
   }
   ,
-  profileimg:[{
+  profileimg:{
     public_id: {//  
         type: String,
       },
       url: {
         type: String,
       }
-    }],
+  },
   courses: [
     {
       type: Schema.Types.ObjectId,
