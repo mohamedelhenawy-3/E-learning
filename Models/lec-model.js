@@ -44,9 +44,19 @@ const lecSchema = new Schema({
         type:Date,
        defult:Date.now()
           },
-      courseName:{
-        type:String
+      doctorData:{
+        doctorName:{
+         doctorName:{
+          type:String
+         },
+         doctorId:{
+          type:String
+         }
       }
+    }
+    ,courseName:{
+      type:String
+    }
       
 });
 module.exports = mongoose.model("Lec", lecSchema);

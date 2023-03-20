@@ -20,7 +20,7 @@ app.use('/api/notification',require('./routes/notification-route'))
 
 // /mongodb+srv://henawii:26112000@cluster0.5yxqswc.mongodb.net/vv
 app.use(errorHandler)
-const url="mongodb+srv://max:10112000@cluster0.xdpxd.mongodb.net/Elearning?retryWrites=true&w=majority"
+const url="mongodb+srv://max:10112000@cluster0.xdpxd.mongodb.net/Elearning1?retryWrites=true&w=majority"
 const port=3000;
 mongoose.connect(url,{})
 .then((result)=>{

@@ -39,25 +39,6 @@ router.post('/',async(req,res,next)=>{
 
 
 })
-//answer the question and calc the marks
-router.post('/answer/:id',async(req,res,next)=>{
-    try{
-        const question= await Question.findById(req.params.id)
-        // console.log(question)
-        const fiest=question.choose.map(t=>{
-            return t.isCorrect
-        })
-        console.log(question.mark) //[true,false]
-       const arr = req.body.arr;
-        if(fiest[arr[0]] == true)
-            res.send(`question mark: ${question.mark}`);
-        else
-            res.send(" question mark :0");
-    }catch(err){
-        next(err)
-    }
-   
-})
 
 router.get('/answersofquestion',async(req,res,next)=>{
     try{

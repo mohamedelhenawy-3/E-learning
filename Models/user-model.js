@@ -14,23 +14,6 @@ const userSchema = new Schema({
    min: 0,
    max: 255,
  },
- phoneNumber: {
-   type: String,
-   required:[true,"Please write you phone number"],
-   length: 11,
- },
- country:{
-  type:String
-
- },
- jobTitle:{
-  type:String
- },
- dateOfBirth: {
-  type: Date,
-  required: true,
-  trim: true,
-},
  email: {
    type: String,
    required:[true,"Please write your email as example@gmail.com"],
@@ -44,42 +27,29 @@ const userSchema = new Schema({
    min: 5,
    max: 1500,
  },
- name:{
-  type:String
-},
 cloudinary_id:{
  type:String
 },
 url:{
 type:String
 },
-enrolled_Courses:{
-   type:Schema.Types.ObjectId,
-   ref:"Course"
+enrolledCourses: {
+  type: [Schema.Types.ObjectId],
+  default: [],
 },
 infoQuizs:[{quizId:{
-   type:String},
-   usermark:{
-   type:String
-   }
+  type:String},
+  usermark:{
+  type:String
+  }
 }],
+
  isAdmin:{type:Boolean,
           default:false},
  createdAt:{
        type:Date,
       defult:Date.now()
          }
-          
-          
-          //  specialCode:[{
-//    email:{
-//        type:String,
-//        default:" "
-//    },
-//    code:{
-//        type:String
-//    }
-//  }]
 });
 userSchema.methods.generateAuthToken = function () {
    //return token idd and when admin it will return id and isAdmin:true

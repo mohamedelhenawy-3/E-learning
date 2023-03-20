@@ -12,8 +12,6 @@ const quizSchema=new Schema({
     ref:'Question'
     
  }],
- doctorName:{String}
- ,
  createdAt:{
    type:Date,
    defult:Date.now()

@@ -19,10 +19,6 @@ router.post("/signup", async (req, res,next) => {
        _.pick(req.body, [
          "firstName",
          "lastName",
-         "phoneNumber",
-         "dateOfBirth",
-         "jobTitle",
-         "country",
          "email",
          "password"
        ])

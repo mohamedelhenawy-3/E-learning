@@ -18,13 +18,10 @@ if(!specialCode||specialCode.emailDoc!="") return next(new ErrorResponse(`check 
 const  newdoctor = new Doctor({
     firstName:req.body.firstName,
     lastName:req.body.lastName,
-    phoneNumber:req.body.phoneNumber,
     email:req.body.email,
     password:req.body.password,
     code:req.body.code,
-    dateOfBirth:req.body.dateOfBirth,
-    jobTitle:req.body.jobTitle,
-    country:req.body.jobTitle
+  
   
 })
 const salt = await bcrypt.genSalt(10);  
@@ -68,7 +65,6 @@ router.get("/",[auth],async(req,res,next)=>{
   }catch(err){
     next(err)
   }
-  
 })
 router.get("/:docId",[auth],async(req,res,next)=>{
   try{

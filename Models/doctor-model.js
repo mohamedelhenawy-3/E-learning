@@ -14,27 +14,11 @@ const doctorSchema = new Schema({
     min: 0,
     max: 255,
   },
-  phoneNumber: {
-    type: String,
-    required: true,
-    length: 11,
-  },
   code:{
   type:String,
   required:[true,"Please write an in valid code DD-MM-YYYY"]
   },
-  country:{
-    type:String
-  
-   },
-   jobTitle:{
-    type:String
-   },
-   dateOfBirth: {
-    type: Date,
-    required: [true,"Please write an in valid date DD-MM-YYYY"],
-    trim: true,
-  },
+
   email: {
     type: String,
     required: true,
@@ -64,12 +48,6 @@ const doctorSchema = new Schema({
     {
       type: Schema.Types.ObjectId,
       ref: "Course",
-    },
-  ],
-  quizz: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Quiz",
     },
   ]
 });
