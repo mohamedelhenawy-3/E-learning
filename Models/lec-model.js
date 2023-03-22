@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const lecSchema = new Schema({
-  duration:{
-     type:Number
-  },
       title: {
         type: String,
       },
@@ -13,16 +10,6 @@ const lecSchema = new Schema({
       decument: [
         {
           public_id: {//  
-            type: String,
-          },
-          url: {
-            type: String,
-          },
-        },
-      ],
-      vedios: [
-        {
-          public_id: {
             type: String,
           },
           url: {
@@ -54,7 +41,34 @@ const lecSchema = new Schema({
     }
     ,courseName:{
       type:String
-    }
+    } 
+    // , durationOfLecture: {
+    //   type: Number,
+    //   default: null,
+    //   min: 0
+    // },
+    // durationOfLectureFormatted: {
+    //   type: String,
+    //   default: null,
+    // },
+    ,
+    vedios: [
+      {
+        public_id: {
+          type: String,
+          required: true,
+        },
+        url: {
+          type: String,
+          required: true,
+        }
+        // duration: {
+        //   type: Number,
+        //   required: true,
+        //   min: 0
+        // },
+      },
+    ],
       
 });
 module.exports = mongoose.model("Lec", lecSchema);

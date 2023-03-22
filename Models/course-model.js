@@ -52,6 +52,10 @@ const courseSchema = new Schema({
         type: Number,
         default: 0,
       },
+      quizMark: {
+        type: Number,
+        default: 0,
+      },
     },
   ],
   reviews: [
@@ -63,7 +67,18 @@ const courseSchema = new Schema({
   averageRating: {
     type: Number,
     default: null
-  }
+
+   } ,
+  // duration: {
+  //   type: Number,
+  //   default: null,
+  //   min: 0
+  // },
+  // durationFormatted: {
+  //   type: String,
+  //   default: null,
+  // },
+  
 });
 
 

@@ -11,7 +11,7 @@ const {
   getquizResponses
 } = require("../Controllers/coursesController");
 
-router.get("/cource/:id",[auth],getCourse); 
+router.get("/course/:id",[auth],getCourse); 
 router.put("/:courseId",[auth],updateCourseData)
 router.post("/:docId",[auth],postCourse); 
 router.put("/:id/enroll",[auth],updateCourse);

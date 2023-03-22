@@ -12,6 +12,10 @@ const quizSchema=new Schema({
     ref:'Question'
     
  }],
+ quizmark:{
+ type:Number,
+ defult:0
+ },
  createdAt:{
    type:Date,
    defult:Date.now()

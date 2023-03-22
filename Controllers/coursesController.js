@@ -6,7 +6,7 @@ const ErrorResponse=require('../utils/errorResponse')
 const User=require('../Models/user-model')
 
 
-const getCourse=async(req,res) => {
+const getCourse=async(req,res,next) => {
     try{    
     const  course = await Course.findById(req.params.id).populate('lectureId')
     if(! course)return  next(new ErrorResponse(`Cant find Cours with id ${req.params.id}`))
