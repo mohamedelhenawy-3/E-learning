@@ -81,5 +81,8 @@ const validateDoctor = (doctor) => {
   return schema.validate(doctor);
 };
 
-module.exports = validateDoctor;
-module.exports = mongoose.model("Doctor", doctorSchema);
+
+module.exports = {
+  Doctor: mongoose.model('Doctor', doctorSchema),
+  validateDoctor: validateDoctor
+}
