@@ -12,6 +12,11 @@ const Notification = mongoose.Schema(
             type: mongoose.Types.ObjectId,
              ref:"User"},
 },
+courseId: {
+  type: mongoose.Types.ObjectId,
+  ref: "Course",
+  required: true,
+},
  read: {
         type: String,
         default: "false",
@@ -21,19 +26,5 @@ const Notification = mongoose.Schema(
   { timestamps: true }
 );
 
-exports.Notification = mongoose.model("Notifications", Notification);
-
-//         name: {
-//             type: String,
-//             required: true,
-//         }
-//     },
-//     read: {
-//       type: String,
-//       default: "false",
-//     },
-//   },
-//   { timestamps: true }
-// );
 
 exports.Notification = mongoose.model("Notifications", Notification);

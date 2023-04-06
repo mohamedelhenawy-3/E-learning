@@ -1,6 +1,6 @@
 const router=require('express').Router();
 const Upload=require('../utils/multer')
-const Doctor=require('../Models/doctor-model');
+const {Doctor,validateDoctor}=require('../Models/doctor-model');
 const Cloudinary=require('../utils/clouodinry')
 const bcrypt = require("bcrypt")
 const auth=require('../middlware/authMiddleware')
@@ -10,6 +10,9 @@ const Code=require('../Models/specialCode-model')
 const ErrorResponse=require('../utils/errorResponse')
 //signUp
 router.post('/signup',async(req,res,next)=>{
+  const { error } =validateDoctor(req.body);
+  if (error) return next(new ErrorResponse(error.details[0].message));
+
 try{  let doctor = await Doctor.findOne({ email: req.body.email });
 if (doctor) return next(new ErrorResponse(`email or pass omvalid `))
 const specialCode= await Code.findOne({code:req.body.code})
@@ -41,7 +44,10 @@ res
 
 router.post("/login",async (req, res,next) => {
   try{
-      //find user by one of his attributes
+
+  const { error } =validateDoctor(req.body);
+  if (error) return next(new ErrorResponse(error.details[0].message));
+
   let doctor = await Doctor.findOne({ email: req.body.email });
   if (!doctor) return  next(new ErrorResponse(`email or password invalid`))
   const validPassword = await bcrypt.compare(
@@ -79,8 +85,10 @@ router.get("/:docId",[auth],async(req,res,next)=>{
 })
 router.put("/doctorprofile/:id", [auth], Upload.single('image'), async (req, res, next) => {
   try {
-    const doctor = await Doctor.findById(req.params.id);
+    const { error } =validateDoctor(req.body);
+    if (error) return next(new ErrorResponse(error.details[0].message));
 
+    const doctor = await Doctor.findById(req.params.id);
     const cloudinary = await Cloudinary.uploader.upload(req.file.path, {
       folder: `${doctor._id}`
     })
@@ -106,7 +114,10 @@ router.put("/doctorprofile/:id", [auth], Upload.single('image'), async (req, res
 });
 
   router.put("/docData/:docId",[auth],async(req,res,next)=>{
+
     try{
+      const { error } =validateDoctor(req.body);
+      if (error) return next(new ErrorResponse(error.details[0].message));
        const updatedoctor=await Doctor.findOneAndUpdate({"id":req.params.docId},{
       $set:{
            name:req.body.name      

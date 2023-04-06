@@ -1,7 +1,7 @@
 const express = require('express');
 const moment = require('moment');
 const router = express.Router();
-const Lec = require('../Models/lec-model');
+const {Lec,validateLec} = require('../Models/lec-model');
 const Doctor=require('../Models/doctor-model')
 const Course=require('../Models/course-model')
 const Cloudinary=require('../utils/clouodinry')
@@ -13,14 +13,11 @@ const {sendNotify}=require('../utils/sendNotifications')
 // const { getVideoDurationInSeconds } = require('get-video-duration')
 router.post('/lec/:courseId/:docId',[auth],async (req, res,next) => {
   try{
+    const { error } =validateLec(req.body);
+    if (error) return next(new ErrorResponse(error.details[0].message));
+  
     const course=await Course.findById(req.params.courseId)
     const doctor=await Doctor.findById(req.params.docId)
-
-    const users=course.enroll
-  
-console.log(course.doctorData.doctorId)
-console.log(req.user.id)
-
     if(req.user.id == course.doctorData.doctorId){
       let lec = await Lec.findOne({ title: req.body.title });
       if (lec) return next(new ErrorResponse(`the lecture already existed`))
@@ -36,11 +33,12 @@ console.log(req.user.id)
        const newlec = await lec.save();
        course.lectureId.push(newlec._id)
        await course.save()
-       const sent = await sendNotify(users, 'there is change in your lecture');
-       if(sent){
-           return res.json({message:"notify send success",users,newlec})
+       const description = `Lecture "${lec.title}" has been updated in course "${course.courseName}".`;
+       const send = await sendNotify(course._id, description);
+       if(send){
+           return res.json({message:"notify send success",send})
       }else{
-        res.json({message:"this lecture not related to this course"})
+        res.json({message:"notify err"})
       }
     }
   }catch(err){
@@ -50,6 +48,7 @@ console.log(req.user.id)
 });
 router.put('/lecimg/:id',[auth],Upload.single('image'),async(req,res,next)=>{
   try{
+
     const lec =await Lec.findById(req.params.id)
     const cloudinay=await Cloudinary.uploader.upload(req.file.path,{
       folder:`E-learning/courses/${lec.courseName}/${lec.title}`
@@ -73,9 +72,9 @@ router.put('/lecimg/:id',[auth],Upload.single('image'),async(req,res,next)=>{
 
   //update data for lec
   router.put("/lectureData/:lecId",[auth],async(req,res,next)=>{
-
-    
-    try{
+      try{
+      const { error } =validateLec(req.body);
+      if (error) return next(new ErrorResponse(error.details[0].message));
       const lecture=await Lec.findById(req.params.lecId)
       if(req.user.id == lecture.doctorData.docId){
         const updatelecture=await Lec.findOneAndUpdate({"id":lecture._id},{
@@ -123,10 +122,12 @@ router.put('/lecimg/:id',[auth],Upload.single('image'),async(req,res,next)=>{
   
 })
 
-router.put('/:id', [auth], Upload.array('files'), async (req, res, next) => {
+router.put('/:id/videos', [auth], Upload.array('files'), async (req, res, next) => {
   try {
-    const lec = await Lec.findById(req.params.id)
-    console.log(req.files)
+    const { error } =validateLec(req.body);
+    if (error) return next(new ErrorResponse(error.details[0].message));
+    const lec = await Lec.findById(req.params.id);
+    console.log(req.files);
     if (req.user.id == lec.doctorData.doctorId) {
       const videos = [];
 
@@ -142,8 +143,7 @@ router.put('/:id', [auth], Upload.array('files'), async (req, res, next) => {
 
         videos.push({
           public_id: cloudinary.public_id,
-          url: cloudinary.url,
-          duration: cloudinary.video.duration
+          url: cloudinary.url
         });
       }
 
@@ -151,25 +151,15 @@ router.put('/:id', [auth], Upload.array('files'), async (req, res, next) => {
       updatedLec.vedios.push(...videos);
       await updatedLec.save();
 
-      // Calculate the total duration of all the videos in the course
       const course = await Course.findOne({ name: lec.courseName });
-      let totalDuration = 0;
-      for (let i = 0; i < course.lectureId.length; i++) {
-        const lecture = await Lec.findById(course.lectureId[i]);
-        for (let j = 0; j < lecture.vedios.length; j++) {
-          totalDuration += lecture.vedios[j].duration;
-        }
-      }
-
-      const durationInHours = Math.floor(totalDuration / 3600);
-      const durationInMinutes = Math.floor((totalDuration % 3600) / 60);
-      const durationInSeconds = Math.floor(totalDuration % 60);
-      const durationFormatted = `${durationInHours}:${durationInMinutes}:${durationInSeconds}`;
-
-      course.duration = durationFormatted;
+      course.duration = "Unknown"; // Set duration to unknown since we are no longer calculating it
       await course.save();
 
-      res.json({ message: "Updated successfully" });
+      // Send notification to all subscribers of the course, if any
+      const description = `Lecture "${lec.title}" has been updated in course "${course.name}".`;
+      const x = await sendNotify(course._id, description);
+
+      res.json({ message: "Updated successfully", x });
 
     } else {
       res.send('You can only update your own lecture')
@@ -179,149 +169,7 @@ router.put('/:id', [auth], Upload.array('files'), async (req, res, next) => {
     next(err)
   }
 });
-async function getVideoDuration(videoUrl) {
-  const probe = await ffmpeg.probe(videoUrl);
-  const duration = probe.format.duration;
 
-  return duration;
-}
-router.put('/:id/videos', [auth], Upload.array('videos'), async (req, res, next) => {
-  try {
-    const lec = await Lec.findById(req.params.id);
-
-    if (req.user.id != lec.doctorData.doctorId) {
-      return res.status(403).json({ error: 'You are not authorized to update this lecture' });
-    }
-
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: 'No videos uploaded' });
-    }
-
-    const videos = [];
-    for (let i = 0; i < req.files.length; i++) {
-      const videoPath = req.files[i].path;
-      const cloudinaryResult = await Cloudinary.uploader.upload(videoPath, {
-        folder: `E-learning/courses/${lec.courseName}/${lec.title}`,
-        resource_type: "video"
-      });
-
-      videos.push({
-        public_id: cloudinaryResult.public_id,
-        url: cloudinaryResult.url,
-        duration: cloudinaryResult.video.duration
-      });
-    }
-
-    const totalVideoDuration = videos.reduce((acc, video) => acc + video.duration, 0);
-    const durationInHours = Math.floor(totalVideoDuration / 3600);
-    const durationInMinutes = Math.floor((totalVideoDuration % 3600) / 60);
-    const durationInSeconds = Math.floor(totalVideoDuration % 60);
-    const durationFormatted = `${durationInHours}:${durationInMinutes}:${durationInSeconds}`;
-
-    const updatedLec = await Lec.findByIdAndUpdate(
-      req.params.id,
-      {
-        $push: { vedios: { $each: videos } },
-        durationOfLecture: totalVideoDuration,
-        durationOfLectureFormatted: durationFormatted
-      },
-      { new: true }
-    );
-
-    const course = await Course.findOne({ name: lec.courseName });
-    const lectureDurations = await Lec.aggregate([
-      { $match: { _id: { $in: course.lectureId } } },
-      { $group: { _id: null, totalDuration: { $sum: "$durationOfLecture" } } }
-    ]);
-    
-    const totalCourseDuration = (lectureDurations && lectureDurations.length > 0) ? lectureDurations[0].totalDuration : 0;
-    
-    // const lectureDurations = await Lec.aggregate([
-    //   { $match: { _id: { $in: course.lectureId } } },
-    //   { $group: { _id: null, totalDuration: { $sum: "$durationOfLecture" } } }
-    // ]);
-
-    // const totalCourseDuration = lectureDurations[0].totalDuration;
-    const courseDurationInHours = Math.floor(totalCourseDuration / 3600);
-    const courseDurationInMinutes = Math.floor((totalCourseDuration % 3600) / 60);
-    const courseDurationInSeconds = Math.floor(totalCourseDuration % 60);
-    const courseDurationFormatted = `${courseDurationInHours}:${courseDurationInMinutes}:${courseDurationInSeconds}`;
-
-    course.duration = totalCourseDuration;
-    course.durationFormatted = courseDurationFormatted;
-    await course.save();
-
-    res.json({ message: "Videos uploaded successfully", lecture: updatedLec, courseDuration: courseDurationFormatted });
-  } catch (err) {
-    next(err);
-  }
-});
-router.put('/:id/videos', [auth], Upload.array('videos'), async (req, res, next) => {
-  try {
-    const lec = await Lec.findById(req.params.id);
-
-    if (req.user.id != lec.doctorData.doctorId) {
-      return res.status(403).json({ error: 'You are not authorized to update this lecture' });
-    }
-
-    if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: 'No videos uploaded' });
-    }
-
-    const videos = [];
-    for (let i = 0; i < req.files.length; i++) {
-      const videoPath = req.files[i].path;
-      const cloudinaryResult = await Cloudinary.uploader.upload(videoPath, {
-        folder: `E-learning/courses/${lec.courseName}/${lec.title}`,
-        resource_type: "video"
-      });
-
-      videos.push({
-        public_id: cloudinaryResult.public_id,
-        url: cloudinaryResult.url,
-        duration: cloudinaryResult.video.duration
-      });
-    }
-
-    const totalVideoDuration = videos.reduce((acc, video) => acc + video.duration, 0);
-    const durationInHours = Math.floor(totalVideoDuration / 3600);
-    const durationInMinutes = Math.floor((totalVideoDuration % 3600) / 60);
-    const durationInSeconds = Math.floor(totalVideoDuration % 60);
-    const durationFormatted = `${durationInHours}:${durationInMinutes}:${durationInSeconds}`;
-
-    const updatedLec = await Lec.findByIdAndUpdate(
-      req.params.id,
-      {
-        $push: { vedios: { $each: videos } },
-        durationOfLecture: totalVideoDuration,
-        durationOfLectureFormatted: durationFormatted
-      },
-      { new: true }
-    );
- console.log(durationOfLecture)
-    const course = await Course.findOne({ name: lec.courseName });
-    const lectureDurations = await Lec.aggregate([
-      { $match: { _id: { $in: course.lectureId } } },
-      { $group: { _id: null, totalDuration: { $sum: "$durationOfLecture" } } }
-    ]);
-    
-    const totalCourseDuration = (lectureDurations && lectureDurations.length > 0) ? lectureDurations[0].totalDuration : 0;
-    
-    const courseDurationInHours = Math.floor(totalCourseDuration / 3600);
-    const courseDurationInMinutes = Math.floor((totalCourseDuration % 3600) / 60);
-    const courseDurationInSeconds = Math.floor(totalCourseDuration % 60);
-    const courseDurationFormatted = `${courseDurationInHours}:${courseDurationInMinutes}:${courseDurationInSeconds}`;
-
-    course.duration = totalCourseDuration;
-    course.durationFormatted = courseDurationFormatted;
-    await course.save();
-
-    res.json({ message: "Videos uploaded successfully", lecture: updatedLec, courseDuration: courseDurationFormatted });
-      
-        } catch (err) {
-          next(err)
-        }
-      });
 
 
 

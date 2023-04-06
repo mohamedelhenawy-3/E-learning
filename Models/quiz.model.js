@@ -1,28 +1,37 @@
-const mongoose=require('mongoose');
+const Joi = require('joi');
+const mongoose = require('mongoose');
 
-const Schema=mongoose.Schema;
-const quizSchema=new Schema({
- quizname:{
-    type:String,
-    required:true
- },
+const quizSchema = new mongoose.Schema({
+  quizname: {
+    type: String,
+    required: true,
+  },
+  questions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Question',
+  }],
+  quizmark: {
+    type: Number,
+    default: 0,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
+});
 
- questions:[{
-    type:Schema.Types.ObjectId,
-    ref:'Question'
-    
- }],
- quizmark:{
- type:Number,
- defult:0
- },
- createdAt:{
-   type:Date,
-   defult:Date.now()
-     }
-},
+const joiQuizSchema = Joi.object({
+  quizname: Joi.string().required(),
+  questions: Joi.array().items(Joi.string()).required(),
+  quizmark: Joi.number().default(0),
+  createdAt: Joi.date().default(Date.now),
+});
 
+const validateQuiz = (quiz) => {
+  return joiQuizSchema.validate(quiz);
+};
 
-);
-
-module.exports=mongoose.model("Quiz", quizSchema);
+module.exports = {
+  Quiz: mongoose.model('Quiz', quizSchema),
+  validateQuiz,
+};

@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Question = require("../Models/questions-model");
-const Quiz = require("../Models/quiz.model");
+const {Quiz,validateQuiz} = require("../Models/quiz.model");
 const Doctor=require('../Models/doctor-model')
 const Course=require('../Models/course-model')
 const User=require('../Models/user-model')
@@ -8,6 +8,9 @@ const auth=require("../middlware/authMiddleware")
 const  ErrorResponse=require('../utils/errorResponse')
 router.post('/courses/:courseId/quizzes', [auth], async (req, res) => {
   try {
+    const { error } =validateQuiz(req.body);
+    if (error) return next(new ErrorResponse(error.details[0].message));
+  
     // Retrieve the doctor creating the quiz from the JWT
     const doctor = await Doctor.findById(req.user.id);
     // Ensure the doctor exists and is authorized to create quizzes
@@ -61,6 +64,8 @@ router.post('/courses/:courseId/quizzes/:quizId/submit', [auth], async (req, res
   const { courseId, quizId } = req.params;
   const { answers } = req.body;
   try {
+    const { error } =validateQuiz(req.body);
+    if (error) return next(new ErrorResponse(error.details[0].message));
     const course = await Course.findById(courseId);
     const quiz = await Quiz.findById(quizId);
     if (!course) {

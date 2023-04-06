@@ -6,17 +6,16 @@ const Course=require('../Models/course-model')
 const express = require('express');
 const router = express.Router();
 
-router.post('/post/:id', async (req, res) => {
-    const course=await Course.findById(req.params.id)
-    const usersId= course.enroll
-    console.log(usersId)
-    const sent = await sendNotify(usersId, 'notify');
-    if(sent){
-        return res.json({message:"notify send success",usersId})
+router.post('/:id', async (req, res) => {
+    const course = await Course.findById(req.params.id);
+    const description = `Lecture has been updated in course "${course._id}".`;
+    const notifications = await sendNotify(course._id.toString(), description);
+    if (notifications) {
+      return res.json({ message: "Notify send success", notifications });
+    } else {
+      res.json({ message: "Notify error" });
     }
-    return res.json({
-        success: false
-    })
-});
+  });
+  
 
 module.exports=router

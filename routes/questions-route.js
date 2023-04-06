@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const Question = require("../Models/questions-model");
+const {Question,validateQuestion} = require("../Models/questions-model");
 
 const ErrorResponse=require('../utils/errorResponse')
 
@@ -26,6 +26,9 @@ router.get('/:id',async(req,res)=>{
 
 router.post('/',async(req,res,next)=>{
     try{
+        const { error } =validateQuestion(req.body);
+        if (error) return next(new ErrorResponse(error.details[0].message));
+      
         const question=new Question({
             title:req.body.title,
             choose:req.body.choose,

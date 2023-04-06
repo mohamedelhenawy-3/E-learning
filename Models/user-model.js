@@ -1,58 +1,118 @@
 const mongoose = require('mongoose');
+const Joi = require('joi');
 const jwt = require("jsonwebtoken");
+const crypto=require('crypto')
+
 const Schema = mongoose.Schema;
 const userSchema = new Schema({
-   firstName: {
-   type: String,
-   required: true,
-   min: 0,
-   max: 255,
- },
- lastName: {
-   type: String,
-   required: true,
-   min: 0,
-   max: 255,
- },
- email: {
-   type: String,
-   required:[true,"Please write your email as example@gmail.com"],
-   unique: true,
-   min: 1,
-   max: 255,
- },
- password: {
-   type: String,
-   required:[true,"Please write and charactar-number"],
-   min: 5,
-   max: 1500,
- },
-cloudinary_id:{
- type:String
-},
-url:{
-type:String
-},
-enrolledCourses: {
-  type: [Schema.Types.ObjectId],
-  default: [],
-},
-infoQuizs:[{quizId:{
-  type:String},
-  usermark:{
-  type:String
+  firstName: {
+    type: String,
+    required: false,
+    minlength: 1,
+    maxlength: 255,
+  },
+  lastName: {
+    type: String,
+    required: false,
+    minlength: 1,
+    maxlength: 255,
+  },
+  email: {
+    type: String,
+    required: true,
+    minlength: 5,
+    maxlength: 255,
+    unique: true,
+    validate: {
+      validator: (v) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(v);
+      },
+      message: "Please enter a valid email address",
+    },
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 5,
+    maxlength: 1500,
+    // validate: {
+    //   validator: (v) => {
+    //     const passwordRegex = /^(?=.*[A-Za-z])[A-Za-z\d]{5,}$/;
+    //     return passwordRegex.test(v);
+    //   },
+    //   message:
+    //     "Password should be at least 5 characters long and should contain at least one letter and one number",
+    // },
+  },
+  cloudinary_id: {
+    type: String,
+  },
+  url: {
+    type: String,
+  },
+  enrolledCourses: {
+    type: [Schema.Types.ObjectId],
+    default: [],
+  },
+  infoQuizs: [
+    {
+      quizId: {
+        type: String,
+      },
+      usermark: {
+        type: String,
+      },
+    },
+  ],
+  resetPasswordToken: {
+    type: String,
+    default: null
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: null
   }
-}],
-
- isAdmin:{type:Boolean,
-          default:false},
- createdAt:{
-       type:Date,
-      defult:Date.now()
-         }
+,
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
 });
+
 userSchema.methods.generateAuthToken = function () {
-   //return token idd and when admin it will return id and isAdmin:true
-   return jwt.sign({ id: this._id, isAdmin: this.isAdmin}, "privateKey"); //returns token
- };
-module.exports = mongoose.model("User", userSchema);
+  //return token idd and when admin it will return id and isAdmin:true
+  return jwt.sign({ id: this._id, isAdmin: this.isAdmin }, "privateKey"); //returns token
+};
+
+const validateUser = (user) => {
+  const schema = Joi.object({
+    firstName: Joi.string().required().min(1).max(255),
+    lastName: Joi.string().required().min(1).max(255),
+    email: Joi.string()
+      .required()
+      .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }),
+    password: Joi.string()
+      .required()
+      .pattern(new RegExp('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$')),
+    cloudinary_id: Joi.string(),
+    url: Joi.string(),
+    enrolledCourses: Joi.array().items(Joi.string()),
+    isAdmin: Joi.boolean(),
+    resetPasswordToken: Joi.string(),
+    resetPasswordExpires: Joi.date(),
+    createdAt: Joi.date(),
+  });
+
+  return schema.validate(user);
+};
+
+
+module.exports = {
+  User: mongoose.model('User', userSchema),
+  validateUser: validateUser
+}

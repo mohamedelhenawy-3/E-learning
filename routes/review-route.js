@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Course=require('../Models/course-model')
-const Review=require('../Models/review-model')
+const {Review,reviewValidationSchema}=require('../Models/review-model')
 const auth=require('../middlware/authMiddleware')
 const  ErrorResponse=require('../utils/errorResponse')
 
@@ -8,6 +8,8 @@ const  ErrorResponse=require('../utils/errorResponse')
 //add revieww 
 router.post('/:courseId/reviews',[auth],async(req,res,next)=>{
     try{
+      const { error } = reviewValidationSchema.validate(req.body);
+      if (error) return res.status(400).send(error.details[0].message);
         req.body.course=req.params.courseId
         console.log(req.params.courseId)
         req.body.user=req.user.id

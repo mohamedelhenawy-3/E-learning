@@ -1,10 +1,9 @@
-const Course=require('../Models/course-model')
+const {Course,validateCourse}=require('../Models/course-model')
 const Doctor=require('../Models/doctor-model');
 const Cloudinary=require('../utils/clouodinry')
 const Lecture=require('../Models/lec-model')
 const ErrorResponse=require('../utils/errorResponse')
 const User=require('../Models/user-model')
-
 
 const getCourse=async(req,res,next) => {
     try{    
@@ -19,6 +18,9 @@ const getCourse=async(req,res,next) => {
   };
 const postCourse=async(req,res,next)=>{
   try {
+    const { error } = validateCourse(req.body);
+    if (error) return next(new ErrorResponse(error.details[0].message));
+
   let course = await Course.findOne({ courseName: req.body.courseName });
    if (course) return next(new ErrorResponse(`the coures already existed`))
    const doctor=await Doctor.findById(req.params.docId)
@@ -42,6 +44,8 @@ const postCourse=async(req,res,next)=>{
 };
 const updateCourseData=async(req,res,next)=>{
   try{
+      const { error } = validateCourse(req.body);
+      if (error) return next(new ErrorResponse(error.details[0].message));
       const course= await Course.findById(req.params.courseId)
       console.log(course.doctorData.doctorId)
       console.log(req.user)

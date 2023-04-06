@@ -9,6 +9,8 @@ app.use(express.json())
 app.use(express.urlencoded({extended:true}));
 app.use(bodyParser.json());
 app.use('/api/user',require('./routes/user-router.js'))
+app.use('/api/auth',require('./routes/auth'))
+
 app.use('/api/course',require('./routes/course-route'))
 app.use('/api/lecture',require('./routes/lecture-route'))
 app.use('/api/question',require('./routes/questions-route'))
@@ -17,6 +19,7 @@ app.use('/api/doctor',require('./routes/doctors-route'))
 app.use('/api/specialCode',require('./routes/specialCode-route'))
 app.use('/api/review',require('./routes/review-route'))
 app.use('/api/notification',require('./routes/notification-route'))
+app.use('/api',require('./routes/forgetresetPassword.js'))
 
 // /mongodb+srv://henawii:26112000@cluster0.5yxqswc.mongodb.net/vv
 app.use(errorHandler)

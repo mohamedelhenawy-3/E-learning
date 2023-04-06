@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const Joi = require('joi');
 const reviewSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -26,6 +26,16 @@ const reviewSchema = new mongoose.Schema({
     required: true
   }
 });
+
+
+const reviewValidationSchema = Joi.object({
+  title: Joi.string().required(),
+  text: Joi.string().required(),
+  rating: Joi.number().integer().min(1).max(5).required(),
+  user: Joi.string().required(),
+  course: Joi.string().required()
+});
+
 
 reviewSchema.index({ course: 1, user: 1 }, { unique: true });
 
@@ -60,5 +70,5 @@ reviewSchema.post('remove', function() {
 });
 
 const Review = mongoose.model('Review', reviewSchema);
-
+module.exports = reviewValidationSchema;
 module.exports = Review;
