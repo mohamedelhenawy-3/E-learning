@@ -3,11 +3,14 @@ const express=require('express');
 const bodyParser = require('body-parser');
 const mongoose=require('mongoose');
 const app=express();
+const cors=require("cors");
 const errorHandler=require('./middlware/globalMiddleware')
 
 app.use(express.json())
 app.use(express.urlencoded({extended:true}));
 app.use(bodyParser.json());
+app.use(cors());
+
 app.use('/api/user',require('./routes/user-router.js'))
 app.use('/api/auth',require('./routes/auth'))
 
@@ -20,6 +23,7 @@ app.use('/api/specialCode',require('./routes/specialCode-route'))
 app.use('/api/review',require('./routes/review-route'))
 app.use('/api/notification',require('./routes/notification-route'))
 app.use('/api',require('./routes/forgetresetPassword.js'))
+app.use('/api/ass',require('./routes/assignment-route'))
 
 // /mongodb+srv://henawii:26112000@cluster0.5yxqswc.mongodb.net/vv
 app.use(errorHandler)

@@ -87,11 +87,11 @@ const validateLec = (lec) => {
       doctorName: Joi.string().required().min(1).max(255),
       doctorId: Joi.string().required().min(1).max(255),
     }),
-    courseName: Joi.string().required().regex(/^[a-zA-Z0-9-_.~%]+$/),
+
     vedios: Joi.array().items(
       Joi.object({
-        public_id: Joi.string().required(),
-        url: Joi.string().required(),
+        public_id: Joi.string(),
+        url: Joi.string(),
         // duration: Joi.number().required().min(0),
       })
     ),
@@ -99,7 +99,7 @@ const validateLec = (lec) => {
 
   return schema.validate(lec);
 };
-
-module.exports = validateLec;
-
-module.exports = mongoose.model("Lec", lecSchema);
+module.exports = {
+  Lec: mongoose.model('Lec', lecSchema),
+  validateLec: validateLec
+}

@@ -7,7 +7,7 @@ module.exports = function (req, res, next) {
 
   const decoded = jwt.verify(token, "privateKey");
   req.user = decoded;
-  console.log(req.user.id)
+
   req.token = decoded
   next();
 };

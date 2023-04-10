@@ -1,15 +1,17 @@
-const Joi = require('joi');
-const mongoose = require('mongoose');
+const Joi = require("joi");
+const mongoose = require("mongoose");
 
 const quizSchema = new mongoose.Schema({
   quizname: {
     type: String,
     required: true,
   },
-  questions: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Question',
-  }],
+  questions: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Question",
+    },
+  ],
   quizmark: {
     type: Number,
     default: 0,
@@ -32,6 +34,6 @@ const validateQuiz = (quiz) => {
 };
 
 module.exports = {
-  Quiz: mongoose.model('Quiz', quizSchema),
+  Quiz: mongoose.model("Quiz", quizSchema),
   validateQuiz,
 };

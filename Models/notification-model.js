@@ -7,24 +7,28 @@ const Notification = mongoose.Schema(
       required: true,
     },
 
- receiver:{ 
-     userData: {
-            type: mongoose.Types.ObjectId,
-             ref:"User"},
-},
-courseId: {
-  type: mongoose.Types.ObjectId,
-  ref: "Course",
-  required: true,
-},
- read: {
+    receiver: {
+      id: {
         type: String,
-        default: "false",
+        required: true,
       },
-},
+      name: {
+        type: String,
+        required: true,
+      },
+    },
+    courseId: {
+      type: mongoose.Types.ObjectId,
+      ref: "Course",
+      required: true,
+    },
+    read: {
+      type: String,
+      default: "false",
+    },
+  },
 
   { timestamps: true }
 );
-
 
 exports.Notification = mongoose.model("Notifications", Notification);

@@ -36,14 +36,6 @@ const userSchema = new Schema({
     required: true,
     minlength: 5,
     maxlength: 1500,
-    // validate: {
-    //   validator: (v) => {
-    //     const passwordRegex = /^(?=.*[A-Za-z])[A-Za-z\d]{5,}$/;
-    //     return passwordRegex.test(v);
-    //   },
-    //   message:
-    //     "Password should be at least 5 characters long and should contain at least one letter and one number",
-    // },
   },
   cloudinary_id: {
     type: String,

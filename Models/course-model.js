@@ -1,17 +1,17 @@
 const mongoose = require("mongoose");
-const Joi = require('joi');
+const Joi = require("joi");
 const Schema = mongoose.Schema;
 const courseSchema = new Schema({
   courseName: {
     type: String,
   },
   doctorData: {
-    firstName:{
-      type:String
+    firstName: {
+      type: String,
     },
-    doctorId:{
-      type:String
-    }
+    doctorId: {
+      type: String,
+    },
   },
   description: {
     type: String,
@@ -19,20 +19,22 @@ const courseSchema = new Schema({
   mark: {
     type: Number,
   },
-  createdAt:{
-     type:Date,
-    defult:Date.now()
+  createdAt: {
+    type: Date,
+    defult: Date.now(),
   },
   enroll: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-   lectureId: [{
-    type: mongoose.Types.ObjectId,
-         ref:"Lec"
-  }],
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  lectureId: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "Lec",
+    },
+  ],
   quizzes: [
     {
       type: Schema.Types.ObjectId,
@@ -67,9 +69,8 @@ const courseSchema = new Schema({
   ],
   averageRating: {
     type: Number,
-    default: null
-
-   } ,
+    default: null,
+  },
   // duration: {
   //   type: Number,
   //   default: null,
@@ -79,29 +80,15 @@ const courseSchema = new Schema({
   //   type: String,
   //   default: null,
   // },
-  
 });
 const validateCourse = (course) => {
   const schema = Joi.object({
     courseName: Joi.string().required(),
-    doctorData: Joi.object({
-      firstName: Joi.string().required(),
-      doctorId: Joi.string().required(),
-    }),
     description: Joi.string().required(),
-    mark: Joi.number().required(),
+    mark: Joi.number(),
     createdAt: Joi.date().default(Date.now),
     enroll: Joi.array().items(Joi.string().required()),
     lectureId: Joi.array().items(Joi.string().required()),
-    quizzes: Joi.array().items(Joi.string().required()),
-    quizResponses: Joi.array().items(
-      Joi.object({
-        userId: Joi.string().required(),
-        quizId: Joi.string().required(),
-        marks: Joi.number().default(0),
-        quizMark: Joi.number().default(0),
-      })
-    ),
     reviews: Joi.array().items(Joi.string().required()),
     averageRating: Joi.number().default(null),
   });
@@ -109,7 +96,7 @@ const validateCourse = (course) => {
   return schema.validate(course);
 };
 
-module.exports = { validateCourse };
-
-module.exports = mongoose.model("Course", courseSchema);
-
+module.exports = {
+  Course: mongoose.model("Course", courseSchema),
+  validateCourse: validateCourse,
+};

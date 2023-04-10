@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
-const Joi = require('joi');
+const Joi = require("joi");
 const Schema = mongoose.Schema;
 const doctorSchema = new Schema({
   firstName: {
@@ -15,9 +15,9 @@ const doctorSchema = new Schema({
     min: 0,
     max: 255,
   },
-  code:{
-  type:String,
-  required:[true,"Please write an in valid code DD-MM-YYYY"]
+  code: {
+    type: String,
+    required: [true, "Please write an in valid code DD-MM-YYYY"],
   },
 
   email: {
@@ -35,26 +35,26 @@ const doctorSchema = new Schema({
   },
   name: {
     type: String,
-  }
-  ,
-  profileimg:{
-    public_id: {//  
-        type: String,
-      },
-      url: {
-        type: String,
-      }
+  },
+  profileimg: {
+    public_id: {
+      //
+      type: String,
+    },
+    url: {
+      type: String,
+    },
   },
   courses: [
     {
       type: Schema.Types.ObjectId,
       ref: "Course",
     },
-  ]
+  ],
 });
 doctorSchema.methods.generateAuthToken = function () {
   //return token idd and when admin it will return id and isAdmin:true
-  return jwt.sign({ id: this._id,isAdmin: this.isAdmin}, "privateKey"); //returns token
+  return jwt.sign({ id: this._id, isAdmin: this.isAdmin }, "privateKey"); //returns token
 };
 const validateDoctor = (doctor) => {
   const schema = Joi.object({
@@ -64,7 +64,8 @@ const validateDoctor = (doctor) => {
       .required()
       .regex(/^\d{2}-\d{2}-\d{4}$/)
       .messages({
-        "string.pattern.base": "Please write a valid code in the format DD-MM-YYYY",
+        "string.pattern.base":
+          "Please write a valid code in the format DD-MM-YYYY",
       }),
     email: Joi.string()
       .required()
@@ -81,8 +82,7 @@ const validateDoctor = (doctor) => {
   return schema.validate(doctor);
 };
 
-
 module.exports = {
-  Doctor: mongoose.model('Doctor', doctorSchema),
-  validateDoctor: validateDoctor
-}
+  Doctor: mongoose.model("Doctor", doctorSchema),
+  validateDoctor: validateDoctor,
+};
