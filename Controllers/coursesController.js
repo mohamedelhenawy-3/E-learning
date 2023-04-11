@@ -1,5 +1,4 @@
 const { Course, validateCourse } = require("../Models/course-model");
-
 const { Doctor } = require("../Models/doctor-model");
 const Cloudinary = require("../utils/clouodinry");
 const { Lecture } = require("../Models/lec-model");
@@ -25,9 +24,7 @@ const postCourse = async (req, res, next) => {
 
     let course = await Course.findOne({ courseName: req.body.courseName });
     if (course) return next(new ErrorResponse(`the coures already existed`));
-    console.log("fuck");
     const doctor = await Doctor.findById(req.params.docId);
-    console.log(doctor._id);
     course = new Course({
       courseName: req.body.courseName,
       doctorData: {
@@ -36,7 +33,6 @@ const postCourse = async (req, res, next) => {
       },
       description: req.body.description,
     });
-    console.log("dd");
     const newcourse = await course.save();
     console.log(newcourse._id);
     doctor.courses.push(newcourse._id);
@@ -51,8 +47,6 @@ const updateCourseData = async (req, res, next) => {
     const { error } = validateCourse(req.body);
     if (error) return next(new ErrorResponse(error.details[0].message));
     const course = await Course.findById(req.params.courseId);
-    console.log(course.doctorData.doctorId);
-    console.log(req.user);
     if (req.user._id == course.doctorData.doctorId) {
       const updateCourseData = await Course.findOneAndUpdate(
         { id: course._id },
@@ -77,13 +71,13 @@ const updateCourse = async (req, res, next) => {
     const courseId = req.params.id;
     const course = await Course.findById(courseId);
     if (!course) {
-      return res.status(404).send("Course not found");
+      return next(new ErrorResponse('cant find this course'))
     }
 
     const userId = req.user.id;
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(401).send("User not authenticated");
+      return next(new ErrorResponse( 'cant find this use'))
     }
 
     if (user.enrolledCourses.includes(courseId)) {
@@ -108,7 +102,7 @@ const deleteCourse = async (req, res) => {
     if (req.user._id == course.doctorData.doctorId) {
       if (!course)
         return next(
-          new ErrorResponse(`Cant find Course with id ${req.params.courseId}`)
+          new ErrorResponse(`Cant find Course with rhis id : ${req.params.courseId}`)
         );
       course.lectureId.map(async (lecture) => {
         await Lecture.findByIdAndDelete(lecture._id);
@@ -162,7 +156,7 @@ const getquizResponses = async (req, res) => {
     });
 
     if (!course) {
-      return res.status(404).send("Course not found.");
+      return next(new ErrorResponse( 'Course not found'))
     }
     const user = await User.findById(req.user._id);
     console.log(course.doctorData);

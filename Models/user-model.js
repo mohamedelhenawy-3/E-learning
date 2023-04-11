@@ -37,11 +37,14 @@ const userSchema = new Schema({
     minlength: 5,
     maxlength: 1500,
   },
-  cloudinary_id: {
-    type: String,
-  },
-  url: {
-    type: String,
+  profileimg: {
+    public_id: {
+      //
+      type: String,
+    },
+    url: {
+      type: String,
+    },
   },
   enrolledCourses: {
     type: [Schema.Types.ObjectId],
