@@ -2,19 +2,21 @@ const router=require('express').Router();
 const admin=require('../middlware/adminMiddleware');
 const auth=require('../middlware/authMiddleware');
 
-
+const Cloudinary=require('../utils/clouodinry')
+const Upload=require('../utils/multer')
 const {
   getUsers,
   SignUp,
   updateProfile,
   updateUser,
-  // setCode,
+  deleteProfilePicture,
 } = require("../Controllers/userController");
 
 router.get("/",[auth,admin],getUsers); 
 router.post("/signup",[auth],SignUp); 
-router.put("/updateProfile/:userId",[auth],updateProfile);
+router.put("/updateProfile/:userId",[auth],Upload.single('image'),updateProfile);
 router.put("/:userId",[auth],updateUser);
+router.delete("/:userId/profileImage",[auth],deleteProfilePicture)
 
 
 module.exports=router;

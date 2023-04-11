@@ -99,7 +99,7 @@ const deleteCourse = async (req, res) => {
     const course = await Course.findById(req.params.courseId).populate(
       "lectureId"
     );
-    if (req.user._id == course.doctorData.doctorId) {
+    if (req.user.id == course.doctorData.doctorId) {
       if (!course)
         return next(
           new ErrorResponse(`Cant find Course with rhis id : ${req.params.courseId}`)

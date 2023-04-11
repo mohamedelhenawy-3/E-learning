@@ -2,7 +2,6 @@ const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const {User,validateUser}=require('../Models/user-model');
 const Cloudinary=require('../utils/clouodinry')
-const Upload=require('../utils/multer')
 const  ErrorResponse=require('../utils/errorResponse')
 
 const SignUp=async (req, res,next) => {  
@@ -44,16 +43,16 @@ const SignUp=async (req, res,next) => {
       
   };
 
-  const updateProfile=(Upload.single('image'),async(req,res,next)=>{
+  const updateProfile=async(req,res,next)=>{
     try {
     
   
       const user = await User.findById(req.params.userId);
-      console.log(user._id)
-      const cloudinary = await Cloudinary.uploader.upload(req.file.path, {
-        folder: `${user._id}`
-      })
   
+      const cloudinary = await Cloudinary.uploader.upload(req.file.path, {
+        folder: `/usersProfiles/${user._id}`
+      })
+      console.log(req.file)
       const updateUser = user;
       if (updateUser.profileimg) {
         updateUser.profileimg.public_id = cloudinary.public_id;
@@ -72,9 +71,8 @@ const SignUp=async (req, res,next) => {
     } catch (err) {
       next(err)
     }
-})
+}
 const updateUser=async(req,res,next)=>{
-
     try{
        const updateData=await User.findOneAndUpdate({"id":req.params.userId},{
       $set:{
@@ -89,11 +87,42 @@ const updateUser=async(req,res,next)=>{
   }
     
   }
-
+  const deleteProfilePicture=async(req,res,next)=>{
+    try{
+    const user=await User.findById(req.params.userId);
+    if(user._id == req.user.id){
+      if (user.profileimg.length != 0) {
+        Cloudinary.api.delete_resources_by_prefix(
+          `usersProfiles/${user._id}`,
+          function (err) {
+            if (err && err.http_code !== 404) {
+              return callback(err);
+            }
+            Cloudinary.api.delete_folder(
+              `usersProfiles/${user._id}`,
+              function (err, result) {
+                console.log(err);
+              }
+            );
+          }
+        );
+      }
+      user.profileimg = null;
+      await user.save();
+    }else{
+      res.json({message:"another user try to delete profile picture"})
+    } 
+    res.status(200).json({message:"profile image deleted succfuly"})
+  }
+  catch(err){
+    next(err)
+  }
+  }
  module.exports = {
     SignUp,
     getUsers,
     updateProfile,
-    updateUser
+    updateUser,
+    deleteProfilePicture
   };
   

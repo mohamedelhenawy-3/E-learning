@@ -1,4 +1,4 @@
-const Upload=require('../utils/multer')
+
 const {Doctor,validateDoctor}=require('../Models/doctor-model');
 const Cloudinary=require('../utils/clouodinry')
 const bcrypt = require("bcrypt")
@@ -47,11 +47,11 @@ const SignUp=async(req,res,next)=>{
       next(err)
     }
   }
-  const updateProfile=(Upload.single('image'), async (req, res, next) => {
+  const updateProfile= async (req, res, next) => {
     try {
       const doctor = await Doctor.findById(req.params.doctorId);
       const cloudinary = await Cloudinary.uploader.upload(req.file.path, {
-        folder: `${doctor._id}`
+        folder: `/ProfileDoctor/${doctor._id}`
       })
   
       const updateDoc = doctor;
@@ -72,7 +72,7 @@ const SignUp=async(req,res,next)=>{
     } catch (err) {
       next(err)
     }
-  });
+  };
 const updateDoctor=async(req,res,next)=>{
 
     try{
@@ -89,11 +89,43 @@ const updateDoctor=async(req,res,next)=>{
   }
     
   }
+  const deleteProfilePicture=async(req,res,next)=>{
+    try{
+    const doctor=await Doctor.findById(req.params.doctorId);
+    if(doctor._id == req.user.id){
+      if (doctor.profileimg.length != 0) {
+        Cloudinary.api.delete_resources_by_prefix(
+          `/ProfileDoctor/${doctor._id}`,
+          function (err) {
+            if (err && err.http_code !== 404) {
+              return callback(err);
+            }
+            Cloudinary.api.delete_folder(
+              `/ProfileDoctor/${doctor._id}`,
+              function (err, result) {
+                console.log(err);
+              }
+            );
+          }
+        );
+      }
+      doctor.profileimg = null;
+      await doctor.save();
+    }else{
+      res.json({message:"another user try to delete profile picture"})
+    } 
+    res.status(200).json({message:"profile image deleted successfully"})
+  }
+  catch(err){
+    next(err)
+  }
+  }
 
  module.exports = {
     SignUp,
     getAllDoctors,
     updateProfile,
-    updateDoctor
+    updateDoctor,
+    deleteProfilePicture
   };
   
