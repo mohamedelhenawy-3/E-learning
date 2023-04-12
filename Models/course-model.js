@@ -71,15 +71,12 @@ const courseSchema = new Schema({
     type: Number,
     default: null,
   },
-  // duration: {
-  //   type: Number,
-  //   default: null,
-  //   min: 0
-  // },
-  // durationFormatted: {
-  //   type: String,
-  //   default: null,
-  // },
+  duration:{
+    type:String,
+    required: true,
+    default: '00:00:00'
+  }
+  
 });
 const validateCourse = (course) => {
   const schema = Joi.object({

@@ -42,7 +42,6 @@ const lecSchema = new Schema({
     },
     courseName:{
       type:String,
-      match: /^[a-zA-Z0-9-_.~%]+$/,
       required: true
     }, 
   
@@ -56,11 +55,11 @@ const lecSchema = new Schema({
           type: String,
           required: true,
         },
-        // duration: {
-        //   type: Number,
-        //   required: true,
-        //   min: 0
-        // },
+        duration:{
+          type:String,
+          required: true,
+          default: '00:00:00'
+        }
       },
     ],
       
@@ -92,7 +91,7 @@ const validateLec = (lec) => {
       Joi.object({
         public_id: Joi.string(),
         url: Joi.string(),
-        // duration: Joi.number().required().min(0),
+        duration: Joi.number().required().min(0),
       })
     ),
   });

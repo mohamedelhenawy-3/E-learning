@@ -1,7 +1,7 @@
 const express = require("express");
 const moment = require("moment");
 const router = express.Router();
-
+const Upload = require("../utils/multer");
 const auth = require("../middlware/authMiddleware");
 
 
@@ -18,9 +18,8 @@ const {
 
 router.post("/:courseId/:docId",[auth],addLecture); 
 router.post("/lectureData/:lecId",[auth],updatelectureData); 
-router.put( "/:id/videos",[auth],updatelectureForVedios); 
-router.put( "/:id/imag",[auth],updatelectureForVedios); 
-router.put( "/:id/imag",[auth],updatelectureForImg); 
+router.put( "/lec/:id/videos",[auth],Upload.array("files"),updatelectureForVedios); 
+router.put( "/:id/imag",[auth],Upload.single("image"),updatelectureForImg); 
 router.delete("/lecture/:lecId/course/:id",[auth],deleteLecture); 
 
 
