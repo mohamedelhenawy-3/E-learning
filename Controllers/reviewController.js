@@ -1,29 +1,67 @@
-const Course=require('../Models/course-model')
+const {Course}=require('../Models/course-model')
 const {Review,reviewValidationSchema}=require('../Models/review-model')
 const  ErrorResponse=require('../utils/errorResponse')
 
 
-const addReview=async(req,res,next)=>{
-    try{
-      const { error } = reviewValidationSchema.validate(req.body);
-      if (error) return res.status(400).send(error.details[0].message);
-        req.body.course=req.params.courseId
-        console.log(req.params.courseId)
-        req.body.user=req.user.id
-        console.log(req.user.id)
-        const course=await Course.findById(req.params.courseId);
-        console.log(course)
-        if(!course)  return  next(new ErrorResponse(`cant find any course to do review on it `))
-        const review =await Review.create(req.body)
-        res.status(200).json({
-            success:true,
-            data:review
-        })
-    } catch(err){
-        next(err)
-    }
+// const addReview=async(req,res,next)=>{
+//     try{
+//       const { error } = reviewValidationSchema.validate(req.body);
+//       if (error) return res.status(400).send(error.details[0].message);
+
+//         req.body.course=req.params.courseId
+//         console.log(req.params.courseId)
+//         req.body.user=req.user.id
+//         console.log(req.user.id)
+//         const course=await Course.findById(req.params.courseId);
+//         console.log(course)
+//         if(!course)  return  next(new ErrorResponse(`cant find any course to do review on it `))
+//         const review =await Review.create(req.body)
+//         await review.save();
+//         res.status(200).json({
+//             success:true,
+//             data:review
+//         })
+//     } catch(err){
+//         next(err)
+//     }
     
-}
+// }
+
+const addReview = async (req, res, next) => {
+  try {
+    // Validate the request body
+    const { error } = reviewValidationSchema.validate(req.body);
+    if (error) {
+      return res.status(400).send(error.details[0].message);
+    }
+
+    // Add the course and user properties to the request body
+    req.body.course = req.params.courseId;
+    req.body.user = req.user.id;
+
+    // Find the course
+    const course = await Course.findById(req.params.courseId);
+    if (!course) {
+      return next(new ErrorResponse(`Cannot find a course to add a review to`));
+    }
+
+    // Create a new review and save it to the database
+    const review = new Review(req.body);
+    await review.save();
+
+    
+    course.reviews.push(review);
+    await course.save();
+    // Return a success response with the saved review data
+    res.status(200).json({
+      success: true,
+      data: review
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 
 const getReview =  async (req, res) => {
     try {

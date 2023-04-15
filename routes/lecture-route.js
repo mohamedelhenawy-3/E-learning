@@ -20,7 +20,7 @@ router.post("/:courseId/:docId",[auth],addLecture);
 router.post("/lectureData/:lecId",[auth],updatelectureData); 
 router.put( "/lec/:id/videos",[auth],Upload.array("files"),updatelectureForVedios); 
 router.put( "/:id/imag",[auth],Upload.single("image"),updatelectureForImg); 
-router.delete("/lecture/:lecId/course/:id",[auth],deleteLecture); 
+router.delete("/:lecId/course/:id",[auth],deleteLecture); 
 
 
 module.exports = router;

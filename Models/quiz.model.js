@@ -23,8 +23,7 @@ const quizSchema = new mongoose.Schema({
 });
 
 const joiQuizSchema = Joi.object({
-  quizname: Joi.string().required(),
-  questions: Joi.array().items(Joi.string()).required(),
+  quizname: Joi.string(),
   quizmark: Joi.number().default(0),
   createdAt: Joi.date().default(Date.now),
 });
@@ -35,5 +34,5 @@ const validateQuiz = (quiz) => {
 
 module.exports = {
   Quiz: mongoose.model("Quiz", quizSchema),
-  validateQuiz,
+  validateQuiz:validateQuiz
 };

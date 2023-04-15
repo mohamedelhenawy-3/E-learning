@@ -18,21 +18,17 @@ const reviewSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true,
   },
   course: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Course",
-    required: true,
   },
 });
 
 const reviewValidationSchema = Joi.object({
   title: Joi.string().required(),
   text: Joi.string().required(),
-  rating: Joi.number().integer().min(1).max(5).required(),
-  user: Joi.string().required(),
-  course: Joi.string().required(),
+  rating: Joi.number().min(1).max(5).required(),
 });
 
 reviewSchema.index({ course: 1, user: 1 }, { unique: true });
@@ -52,7 +48,8 @@ reviewSchema.statics.getAverageRating = async function (courseId) {
 
   try {
     await mongoose.model("Course").findByIdAndUpdate(courseId, {
-      averageRating: Math.ceil(obj[0].averageRating / 10) * 10,
+      // averageRating: Math.ceil(obj[0].averageRating / 10) * 10,
+      averageRating: obj[0].averageRating.toFixed(1)
     });
   } catch (err) {
     console.error(err);
@@ -67,6 +64,7 @@ reviewSchema.post("remove", function () {
   this.constructor.getAverageRating(this.course);
 });
 
-const Review = mongoose.model("Review", reviewSchema);
-module.exports = reviewValidationSchema;
-module.exports = Review;
+module.exports = {
+  Review: mongoose.model('Review', reviewSchema),
+  reviewValidationSchema: reviewValidationSchema
+}

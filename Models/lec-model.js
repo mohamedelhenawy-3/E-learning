@@ -40,9 +40,13 @@ const lecSchema = new Schema({
           type:String
          }
     },
-    courseName:{
-      type:String,
-      required: true
+    courseData:{
+      courseName:{
+        type:String
+       },
+       courseId:{
+        type:String
+       }
     }, 
   
     vedios: [
@@ -90,8 +94,7 @@ const validateLec = (lec) => {
     vedios: Joi.array().items(
       Joi.object({
         public_id: Joi.string(),
-        url: Joi.string(),
-        duration: Joi.number().required().min(0),
+        url: Joi.string()
       })
     ),
   });

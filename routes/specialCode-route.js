@@ -5,9 +5,7 @@ const auth=require('../middlware/authMiddleware')
 
 
 
-    const {
-        addCode,
-      } = require("../Controllers/specialCodeController");
+    const {addCode} = require("../Controllers/specialCodeController");
 
      
     

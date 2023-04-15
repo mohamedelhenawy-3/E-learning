@@ -1,16 +1,16 @@
-const Question = require("../Models/questions-model");
+const {Question} = require("../Models/questions-model");
 const {Quiz,validateQuiz} = require("../Models/quiz.model");
-const Doctor=require('../Models/doctor-model')
-const Course=require('../Models/course-model')
-const User=require('../Models/user-model')
+const {Doctor}=require('../Models/doctor-model')
+const {Course}=require('../Models/course-model')
+const {User}=require('../Models/user-model')
 const  ErrorResponse=require('../utils/errorResponse')
 
 
 
-const addQuiz=async (req, res) => {
+const addQuiz=async (req, res,next) => {
     try {
-      const { error } =validateQuiz(req.body);
-      if (error) return next(new ErrorResponse(error.details[0].message));
+      // const { error } =validateQuiz(req.body);
+      // if (error) return next(new ErrorResponse(error.details[0].message));
     
       // Retrieve the doctor creating the quiz from the JWT
       const doctor = await Doctor.findById(req.user.id);
@@ -20,6 +20,7 @@ const addQuiz=async (req, res) => {
       }
       // Retrieve the course to which the quiz belongs
       const course = await Course.findById(req.params.courseId);
+      console.log("courseid",course._id)
       // Ensure the course exists and is associated with the doctor creating the quiz
       if (!course || course.doctorData.doctorId !== doctor.id) {
         return res.status(401).json({ message: 'Unauthorized access. Only the course creator can create quizzes for the course.' });
@@ -59,12 +60,14 @@ const addQuiz=async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   };
-   const submitAnswer=async (req, res) => {
+   const submitAnswer=async (req, res,next) => {
     const { courseId, quizId } = req.params;
     const { answers } = req.body;
     try {
-      const { error } =validateQuiz(req.body);
-      if (error) return next(new ErrorResponse(error.details[0].message));
+   
+      // const { error } =validateQuiz(req.body);
+      // if (error) return next(new ErrorResponse(error.details[0].message));
+
       const course = await Course.findById(courseId);
       const quiz = await Quiz.findById(quizId);
       if (!course) {
@@ -189,28 +192,60 @@ const addQuiz=async (req, res) => {
    }
 
 }
-const deleteQuiz=async(req,res,next)=>{
-    try{
-      const courseId = req.params.courseId;
-      // Get the course
-      const course = await Course.findById(courseId);
-      if (!course) {
-        return res.status(404).send("Course not found");
-      }
-      // Check if the requesting doctor is the creator of the course
-      if (course.doctorData.doctorId !== req.user.id) {
-        return res.status(401).send("Unauthorized access");
-      }
-        const quiz=await  Quiz.findById(req.params.id)
-        quiz.questions.map(questionss=>{
-            Question.findByIdAndDelete(questionss._id)
-        })
-        await Quiz.findByIdAndDelete(Course);
-        res.status(200).json({message:"delete quiz successfully"})
-    }catch(err){
-        next(err)
+// const deleteQuiz=async(req,res,next)=>{
+//     try{
+//       const courseId = req.params.courseId;
+//       // Get the course
+//       const course = await Course.findById(courseId);
+//       if (!course) {
+//         return res.status(404).send("Course not found");
+//       }
+
+//       // Check if the requesting doctor is the creator of the course
+//       if (course.doctorData.doctorId !== req.user.id) {
+//         return res.status(401).send("Unauthorized access");
+//       }
+//         const quiz=await  Quiz.findById(req.params.id)
+//         quiz.questions.map(questionss=>{
+//             Question.findByIdAndDelete(questionss._id)
+//         })
+//         await Quiz.findByIdAndDelete(Course);
+//         res.status(200).json({message:"delete quiz successfully"})
+//     }catch(err){
+//         next(err)
+//     }
+// }
+
+const deleteQuiz = async (req, res, next) => {
+  try {
+    const courseId = req.params.courseId;
+    // Get the course
+    const course = await Course.findById(courseId);
+    if (!course) {
+      return res.status(404).send("Course not found");
     }
-}
+
+    // Check if the requesting doctor is the creator of the course
+    if (course.doctorData.doctorId !== req.user.id) {
+      return res.status(401).send("Unauthorized access");
+    }
+    
+    const quiz = await Quiz.findById(req.params.quizId);
+    if (!quiz) {
+      return res.status(404).send("Quiz not found");
+    }
+
+    quiz.questions.map((question) => {
+      Question.findByIdAndDelete(question._id);
+    });
+
+    await Quiz.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Delete quiz successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
   module.exports = {
     addQuiz,
     submitAnswer,

@@ -7,7 +7,10 @@ const { User } = require("../Models/user-model");
 
 const getCourse = async (req, res, next) => {
   try {
-    const course = await Course.findById(req.params.id).populate("lectureId");
+    const course = await Course.findById(req.params.id).select('courseName doctorData description  reviews averageRating  duration') .populate({
+      path: 'reviews',
+      select: 'title text rating'
+    });
     if (!course)
       return next(
         new ErrorResponse(`Cant find Cours with id ${req.params.id}`)
@@ -17,6 +20,52 @@ const getCourse = async (req, res, next) => {
     next(err);
   }
 };
+
+
+// const courseDetails = async (req, res, next) => {
+//   try {
+//     const courseId = req.params.courseId;
+//     const userId = req.user.id;
+
+//     const course = await Course.findOne({ _id: courseId, enroll: userId })
+//                                   .populate('doctorData.doctorId', 'firstName lastName')
+//                                   .exec();
+
+//     if (!course) {
+//       return next(new ErrorResponse(`User is not enrolled in course with id ${courseId}`, 404));
+//     }
+
+//     res.status(200).json(course);
+//   } catch (err) {
+//     next(err);
+//   }
+// }
+const courseDetails = async (req, res, next) => {
+  try {
+    const courseId = req.params.courseId;
+    const userId = req.user.id;
+
+    const course = await Course.findOne({ _id: courseId, enroll: userId })
+      .populate('doctorData.doctorId', 'firstName lastName')
+      .populate({
+        path: 'quizResponses',
+        match: { userId: userId },
+        populate: { path: 'quizId', select: 'quizName' }
+      })
+      .exec();
+
+    if (!course) {
+      return next(new ErrorResponse(`User is not enrolled in course with id ${courseId}`, 404));
+    }
+
+    res.status(200).json(course);
+  } catch (err) {
+    next(err);
+  }
+}
+
+
+
 const postCourse = async (req, res, next) => {
   try {
     const { error } = validateCourse(req.body);
@@ -94,11 +143,9 @@ const updateCourse = async (req, res, next) => {
   }
 };
 
-const deleteCourse = async (req, res) => {
+const deleteCourse = async (req, res,next) => {
   try {
-    const course = await Course.findById(req.params.courseId).populate(
-      "lectureId"
-    );
+    const course = await Course.findById(req.params.courseId).populate("lectureId");
     if (req.user.id == course.doctorData.doctorId) {
       if (!course)
         return next(
@@ -124,6 +171,7 @@ const deleteCourse = async (req, res) => {
           }
         );
       }
+      res.json({message:"course delete successfully "})
     }
   } catch (err) {
     next(err);
@@ -143,18 +191,7 @@ const getquizResponses = async (req, res) => {
   const { courseId } = req.params;
 
   try {
-    const course = await Course.findById(courseId).populate({
-      path: "quizResponses",
-      populate: [
-        { path: "userId", model: "User", select: "firstName lastName" },
-        {
-          path: "quizId",
-          model: "Quiz",
-          populate: { path: "questions", model: "Question", select: "mark" },
-        },
-      ],
-    });
-
+    const course = await Course.findById(courseId)
     if (!course) {
       return next(new ErrorResponse( 'Course not found'))
     }
@@ -184,4 +221,5 @@ module.exports = {
   deleteCourse,
   updateCourseData,
   getCourses,
+  courseDetails
 };

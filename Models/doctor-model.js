@@ -17,7 +17,7 @@ const doctorSchema = new Schema({
   },
   code: {
     type: String,
-    required: [true, "Please write an in valid code DD-MM-YYYY"],
+    required: true,
   },
 
   email: {
@@ -29,9 +29,9 @@ const doctorSchema = new Schema({
   },
   password: {
     type: String,
-    required: true,
-    min: 5,
-    max: 1500,
+    required: [true,'assword must contain at least one letter ([A-Za-z]) and one digit (\\d), and must be at least 5 characters long ({5,}'],
+    minlength: 5,
+    maxlength: 1500,
   },
   name: {
     type: String,
@@ -60,17 +60,13 @@ const validateDoctor = (doctor) => {
   const schema = Joi.object({
     firstName: Joi.string().required().min(1).max(255),
     lastName: Joi.string().required().min(1).max(255),
-    code: Joi.string()
-      .required()
-      .regex(/^\d{2}-\d{2}-\d{4}$/)
-      .messages({
-        "string.pattern.base":
-          "Please write a valid code in the format DD-MM-YYYY",
-      }),
+    code: Joi.string().required(),
     email: Joi.string()
       .required()
       .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }),
-    password: Joi.string().required().min(5).max(1500),
+      password: Joi.string()
+      .required()
+      .pattern(new RegExp('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$')),
     name: Joi.string(),
     profileimg: Joi.object({
       public_id: Joi.string(),

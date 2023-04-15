@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const {User,validateUser}=require('../Models/user-model');
 const Cloudinary=require('../utils/clouodinry')
 const  ErrorResponse=require('../utils/errorResponse')
+const {Course}=require("../Models/course-model.js")
+const {Quiz}=require("../Models/quiz.model")
 
 const SignUp=async (req, res,next) => {  
     try{
@@ -31,6 +33,60 @@ const SignUp=async (req, res,next) => {
       next(err)
     }
   };
+// const getUserProfile=async(req,res,next)=>{
+
+//   try {
+//     const user = await User.findById(req.params.userId)
+//     if (!user) return res.status(404).send('User not found');
+//     // return only the desired fields from the user object
+//     const userProfile = {
+//       firstName: user.firstName,
+//       lastName: user.lastName,
+//       email: user.email,
+//       enrolledCourses: user.enrolledCourses,
+//       infoQuizs: user.infoQuizs.filter(q => q.userId === req.user.id),
+//       profileimg: user.profileimg,
+//       createdAt: user.createdAt
+//     };
+//     res.send(userProfile);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Server error');
+//   }
+ 
+// }
+const getUserProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.userId)
+    if (!user) return res.status(404).send('User not found');
+    
+    // modify userProfile object to show required fields only
+    const userProfile = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      enrolledCourses: [],
+      quizzes: [],
+      profileimg: {},
+      createdAt: user.createdAt
+    };
+    const enrolledCourses = await Course.find({ _id: { $in: user.enrolledCourses } }, { title: 1 });
+    const quizzes = await Quiz.find({ userId: user._id }, { quizName: 1, usermark: 1 });
+    userProfile.enrolledCourses = enrolledCourses;
+    userProfile.quizzes = quizzes;
+    
+    if (user.profileimg && user.profileimg.url) {
+      userProfile.profileimg = {
+        public_id: user.profileimg.public_id,
+        url: user.profileimg.url
+      }
+    }
+    res.send(userProfile);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+}
 
   const getUsers=async(req,res,next)=>{
     try{
@@ -42,6 +98,20 @@ const SignUp=async (req, res,next) => {
     }
       
   };
+
+  const enrolledCourses=async(req,res,next)=>{
+  try{
+    const user=await User.findById(req.params.userId);
+    if (!user) return res.status(404).send('User not found');
+    res.status(200).json({enrolledCourses:user.enrolledCourses});
+
+  }catch(err){
+    next(err)
+  }
+
+  }
+
+  
 
   const updateProfile=async(req,res,next)=>{
     try {
@@ -118,11 +188,14 @@ const updateUser=async(req,res,next)=>{
     next(err)
   }
   }
+
  module.exports = {
     SignUp,
     getUsers,
     updateProfile,
     updateUser,
-    deleteProfilePicture
+    deleteProfilePicture,
+    enrolledCourses,
+    getUserProfile
   };
   

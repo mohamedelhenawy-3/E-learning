@@ -3,12 +3,14 @@ const {Doctor,validateDoctor}=require('../Models/doctor-model');
 const Cloudinary=require('../utils/clouodinry')
 const bcrypt = require("bcrypt")
 const ErrorResponse=require('../utils/errorResponse')
+const Code=require("../Models/specialCode-model")
 
 const SignUp=async(req,res,next)=>{
+  try{  
     const { error } =validateDoctor(req.body);
     if (error) return next(new ErrorResponse(error.details[0].message));
-  
-  try{  let doctor = await Doctor.findOne({ email: req.body.email });
+    
+  let doctor = await Doctor.findOne({ email: req.body.email });
   if (doctor) return next(new ErrorResponse(`email or pass omvalid `))
   const specialCode= await Code.findOne({code:req.body.code})
   console.log(specialCode.emailDoc)
@@ -36,7 +38,24 @@ const SignUp=async(req,res,next)=>{
     }
   
   }
-  
+  const getDoctorProfile = async (req, res) => {
+    try {
+      const doctor = await Doctor.findById(req.params.doctorId).populate('courses');
+      if (!doctor) {
+        return res.status(404).send('Doctor not found');
+      }
+      const doctorProfile = {
+        firstName: doctor.firstName,
+        lastName: doctor.lastName,
+        courses: doctor.courses,
+        profileimg: doctor.profileimg,
+      };
+      res.send(doctorProfile);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Server error');
+    }
+  };
 
   const getAllDoctors=async(req,res,next)=>{
     try{
@@ -126,6 +145,7 @@ const updateDoctor=async(req,res,next)=>{
     getAllDoctors,
     updateProfile,
     updateDoctor,
+    getDoctorProfile,
     deleteProfilePicture
   };
   

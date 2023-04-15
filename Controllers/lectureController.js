@@ -1,12 +1,11 @@
-const { Lec, validateLec } = require("../Models/lec-model");
+const  {Lec }= require("../Models/lec-model");
 const { Doctor } = require("../Models/doctor-model");
-const { Course } = require("../Models/course-model");
+const { Course}  = require("../Models/course-model");
 const Cloudinary = require("../utils/clouodinry");
-const Upload = require("../utils/multer");
-const ErrorResponse = require("../utils/errorResponse");
-const auth = require("../middlware/authMiddleware");
 const { sendNotify } = require("../utils/sendNotifications");
 const { formateDuration } = require("../utils/formateDuration");
+const {parseDuration}=require("../utils/parseDuration")
+
 
 const addLecture = async (req, res, next) => {
   try {
@@ -25,7 +24,10 @@ const addLecture = async (req, res, next) => {
       const lec = new Lec({
         title: req.body.title,
         description: req.body.description,
-        courseName: course.courseName,
+        courseData: {
+          courseName: course.courseName,
+          courseId: course._id,
+        },
         doctorData: {
           doctorName: doctor.firstName,
           doctorId: doctor._id,
@@ -84,26 +86,19 @@ const updatelectureForVedios = async (req, res, next) => {
     const lec = await Lec.findById(req.params.id);
     if (req.user.id == lec.doctorData.doctorId) {
       const videos = [];
-      console.log('lec',lec)
-      console.log('req.file',req.files)
       if (!req.files || req.files.length === 0) {
         return res.status(400).json({ error: "No files uploaded" });
       }
-    //  let totalDuration=0;
+      var totalDuration=0;
       for (let i = 0; i < req.files.length; i++) {
+       
         const cloudinary = await Cloudinary.uploader.upload(req.files[i].path, {
           folder: `E-learning/courses/${lec.courseName}/${lec.title}`,
           resource_type: "video",
         });
         const durationInSeconds = Math.round(cloudinary.duration);
         const formattedDuration = await formateDuration(durationInSeconds);
-    
-
-        // totalDuration += durationInSeconds;
-        console.log('durationInSeconds',durationInSeconds);
-        console.log('formattedDuration',formattedDuration)
-
-
+      
         if (isNaN(durationInSeconds)) {
           throw new Error("Invalid duration");
         }
@@ -112,15 +107,19 @@ const updatelectureForVedios = async (req, res, next) => {
           url: cloudinary.url,
           duration: formattedDuration,
         });
+        totalDuration+=durationInSeconds
+        x= await formateDuration(totalDuration);
       }
-   
-      // const formatCourseDuration = await formateDuration(totalDuration);
-      // console.log(formatCourseDuration);
+      const course = await Course.findOne({ _id: lec.courseData.courseId });
+      const oldDurationInSeconds = parseDuration(course.duration);
+      const newDurationInSeconds = oldDurationInSeconds + totalDuration;
+      course.duration =await formateDuration(newDurationInSeconds);
+      await course.save();
+
       const updatedLec = lec;
       updatedLec.vedios.push(...videos);
       await updatedLec.save();
-
-    
+     
        res.json({message: "update done successful" });
     }else{
       re.json({message:"cant update this lecture "})
@@ -150,16 +149,15 @@ const updatelectureForImg = async (req, res, next) => {
   }
 };
 
-const deleteLecture = async (req, res) => {
+const deleteLecture = async (req, res,next) => {
   try {
     const course = await Course.findById(req.params.id);
     const lecture = await Lec.findById(req.params.lecId);
-    console.log(lecture._id);
-    if (
-      req.user.id == course.doctorData.doctorId &&
-      req.user.id == lecture.doctorData.docId
-    ) {
-      if (!lecture) "course not found";
+    console.log(course.doctorData.doctorId);
+    console.log(lecture.doctorData.docId)
+    console.log(req.user.id)
+    if (req.user.id == course.doctorData.doctorId && req.user.id == lecture.doctorData.doctorId) {
+     if (!lecture) "course not found";
       await Lec.findByIdAndRemove(lecture);
       if (lecture.length != 0) {
         Cloudinary.api.delete_resources_by_prefix(

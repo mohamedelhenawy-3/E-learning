@@ -4,13 +4,20 @@ const nodemailer = require('nodemailer');
 require("dotenv").config();
 const {User} = require('../Models/user-model');
 const {Doctor}=require('../Models/doctor-model')
+const Joi=require("joi")
+const ErrorResponse=require('../utils/errorResponse')
 
 
 
 
 
-userForgetPassword=async (req, res) => {
+userForgetPassword=async (req, res,next) => {
     try {
+
+
+      const { error } = validatePassword(req.body);
+      if (error) return next(new ErrorResponse(error.details[0].message));
+      
       const { email } = req.body;
   
       // Find the user by email
@@ -58,8 +65,12 @@ userForgetPassword=async (req, res) => {
     }
   };
 
-  userResetPassword=async (req, res) => {
+  userResetPassword=async (req, res,next) => {
     try {
+      
+      const { error } = validatePassword(req.body);
+      if (error) return next(new ErrorResponse(error.details[0].message));
+
       const { token } = req.params;
       const { password } = req.body;
       
@@ -112,8 +123,12 @@ userForgetPassword=async (req, res) => {
   };
    
 
-doctorForgetPassword=async (req, res) => {
+doctorForgetPassword=async (req, res,next) => {
     try {
+            
+      const { error } = validatePassword(req.body);
+      if (error) return next(new ErrorResponse(error.details[0].message));
+
       const { email } = req.body;
   
       // Find the doctor by email
@@ -162,6 +177,11 @@ doctorForgetPassword=async (req, res) => {
   };
   doctorResetPassword=async (req, res) => {
     try {
+
+
+      const { error } = validatePassword(req.body);
+      if (error) return next(new ErrorResponse(error.details[0].message));
+
         const { token } = req.params;
         const { password } = req.body;
         
@@ -213,6 +233,16 @@ doctorForgetPassword=async (req, res) => {
       }
 };
 
+
+const validatePassword = (user) => {
+  const schema = Joi.object({
+    password: Joi.string()
+      .required()
+      .pattern(new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$")),
+  });
+
+  return schema.validate(user);
+};
 
   module.exports = {
     userForgetPassword,
