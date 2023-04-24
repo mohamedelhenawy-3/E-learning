@@ -8,7 +8,8 @@ const {
   updateCourseData,
   deleteCourse,
   getquizResponses,
-  courseDetails
+  courseDetails,
+  searchAboutUser
 } = require("../Controllers/coursesController");
 
 router.get("/:id",[auth],getCourse); 
@@ -18,8 +19,8 @@ router.put("/:id/enroll",[auth],updateCourse);
 router.delete("/:courseId",[auth],deleteCourse) 
 router.get('/courses',[auth],getCourses)
 router.get('/courseDetails/:courseId',[auth],courseDetails)
-
 router.get('/courses/:courseId/quizResponses',[auth],getquizResponses)
+router.get("/course/:id/quiz/:quizId/usermark",[auth],searchAboutUser)
 
 
 

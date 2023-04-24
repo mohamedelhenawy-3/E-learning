@@ -92,6 +92,10 @@ const validateCourse = (course) => {
 
   return schema.validate(course);
 };
+courseSchema.methods.getQuizById = function (quizId) {
+  return this.quizzes.find((quiz) => quiz._id.toString() === quizId.toString());
+};
+
 
 module.exports = {
   Course: mongoose.model("Course", courseSchema),

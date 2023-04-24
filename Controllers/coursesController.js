@@ -21,25 +21,71 @@ const getCourse = async (req, res, next) => {
   }
 };
 
+const searchAboutUser = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).send('Course not found.');
 
-// const courseDetails = async (req, res, next) => {
+    const quiz = course.getQuizById(req.params.quizId);
+    if (!quiz) return res.status(404).send('Quiz not found.');
+
+    console.log(quiz)
+    const quizResponse = course.quizResponses.find(response => response.quizId.equals(quiz._id));
+    if (!quizResponse) return res.status(404).send('Quiz response not found.');
+
+    console.log(quizResponse.quizMark)
+
+    const { firstName, lastName } = req.body;
+
+    const user = await User.findOne({ firstName, lastName });
+    if (!user) return res.status(404).send('User not found.');
+
+    const userQuiz = user.infoQuizs.find((q) => q.quizId == req.params.quizId);
+    if (!userQuiz) return res.status(404).send('User quiz not found.');
+
+    const result = {
+      quizMark: quizResponse.quizMark,
+      userMark: quizResponse.marks,
+    };
+
+    res.send(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error.');
+  }
+};
+
+
+// const searchAboutUser=async (req, res) => {
 //   try {
-//     const courseId = req.params.courseId;
-//     const userId = req.user.id;
+//     const course = await Course.findById(req.params.id);
+//     if (!course) return res.status(404).send('Course not found.');
 
-//     const course = await Course.findOne({ _id: courseId, enroll: userId })
-//                                   .populate('doctorData.doctorId', 'firstName lastName')
-//                                   .exec();
+//     const quiz = course.quizzes.id(req.params.quizId);
+//     if (!quiz) return res.status(404).send('Quiz not found.');
 
-//     if (!course) {
-//       return next(new ErrorResponse(`User is not enrolled in course with id ${courseId}`, 404));
-//     }
+//     const { firstName, lastName } = req.body;
 
-//     res.status(200).json(course);
-//   } catch (err) {
-//     next(err);
+//     const user = await User.findOne({ firstName, lastName });
+//     if (!user) return res.status(404).send('User not found.');
+
+//     const userQuiz = user.infoQuizs.find((q) => q.quizId == req.params.quizId);
+//     if (!userQuiz) return res.status(404).send('User quiz not found.');
+
+//     const result = {
+//       firstName: user.firstName,
+//       lastName: user.lastName,
+//       quizMark: quiz.mark,
+//       userMark: userQuiz.usermark,
+//     };
+
+//     res.send(result);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Server error.');
 //   }
-// }
+// };
+
 const courseDetails = async (req, res, next) => {
   try {
     const courseId = req.params.courseId;
@@ -221,5 +267,6 @@ module.exports = {
   deleteCourse,
   updateCourseData,
   getCourses,
-  courseDetails
+  courseDetails,
+  searchAboutUser
 };
