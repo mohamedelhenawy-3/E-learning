@@ -5,25 +5,33 @@ const Cloudinary=require('../utils/clouodinry')
 const  ErrorResponse=require('../utils/errorResponse')
 const {Course}=require("../Models/course-model.js")
 const {Quiz}=require("../Models/quiz.model")
+const {Lec}=require('../Models/lec-model')
 
 const SignUp=async (req, res,next) => {  
     try{
 
       const { error } = validateUser(req.body);
       if (error) return next(new ErrorResponse(error.details[0].message));
+
+      const { firstName, lastName, email, password, confirmPassword } = req.body;
+
+      if (password !== confirmPassword) {
+        return next(new ErrorResponse("Passwords do not match"));
+      }
       
      let user = await User.findOne({ email: req.body.email });
      if (user)  return  next(new ErrorResponse(`user exists `))
-     user = new User(
-       _.pick(req.body, [
-         "firstName",
-         "lastName",
-         "email",
-         "password"
-       ])
-     );
+     user = new User({
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      password: password,
+      confirmPassword:confirmPassword
+    });
+    
      const salt = await bcrypt.genSalt(10);  
      user.password = await bcrypt.hash(user.password, salt);
+     user.confirmPassword = await bcrypt.hash(user.confirmPassword, salt);
     const saveduser= await user.save();
      res
        .header("x-auth-token", user.generateAuthToken())
@@ -33,28 +41,7 @@ const SignUp=async (req, res,next) => {
       next(err)
     }
   };
-// const getUserProfile=async(req,res,next)=>{
 
-//   try {
-//     const user = await User.findById(req.params.userId)
-//     if (!user) return res.status(404).send('User not found');
-//     // return only the desired fields from the user object
-//     const userProfile = {
-//       firstName: user.firstName,
-//       lastName: user.lastName,
-//       email: user.email,
-//       enrolledCourses: user.enrolledCourses,
-//       infoQuizs: user.infoQuizs.filter(q => q.userId === req.user.id),
-//       profileimg: user.profileimg,
-//       createdAt: user.createdAt
-//     };
-//     res.send(userProfile);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Server error');
-//   }
- 
-// }
 const getUserProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId)
@@ -110,7 +97,41 @@ const getUserProfile = async (req, res, next) => {
   }
 
   }
+ const lecView=async (req, res) => {
+  const userId = req.params.userId;
+  const courseId = req.params.courseId;
+  const lectureId = req.params.lectureId;
 
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check if the user is enrolled in the specified course
+    if (!user.enrolledCourses.includes(courseId)) {
+      return res.status(400).json({ error: 'User is not enrolled in the course' });
+    }
+
+    // Find the lecture by ID
+    const lecture = await Lec.findOne({ _id: lectureId, courseId: courseId });
+
+    if (!lecture) {
+      return res.status(404).json({ error: 'Lecture not found' });
+    }
+
+    // Get the specific videos from the lecture
+    const videos = lecture.vedios;
+
+    // Return the videos to the client
+    res.json(videos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
   
 
   const updateProfile=async(req,res,next)=>{
@@ -196,6 +217,7 @@ const updateUser=async(req,res,next)=>{
     updateUser,
     deleteProfilePicture,
     enrolledCourses,
-    getUserProfile
+    getUserProfile,
+    lecView:lecView
   };
   

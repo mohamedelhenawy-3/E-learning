@@ -33,7 +33,13 @@ const userSchema = new Schema({
   },
   password: {
     type: String,
-    required: [true,'assword must contain at least one letter ([A-Za-z]) and one digit (\\d), and must be at least 5 characters long ({5,}'],
+    required:true,
+    minlength: 5,
+    maxlength: 1500,
+  },
+  confirmPassword: {
+    type: String,
+    required: true,
     minlength: 5,
     maxlength: 1500,
   },
@@ -95,6 +101,7 @@ const validateUser = (user) => {
     password: Joi.string()
       .required()
       .pattern(new RegExp('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$')),
+   confirmPassword: Joi.string().required(),
     cloudinary_id: Joi.string(),
     url: Joi.string(),
     enrolledCourses: Joi.array().items(Joi.string()),

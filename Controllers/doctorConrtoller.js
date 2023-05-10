@@ -9,28 +9,48 @@ const SignUp=async(req,res,next)=>{
   try{  
     const { error } =validateDoctor(req.body);
     if (error) return next(new ErrorResponse(error.details[0].message));
-    
+ 
+    const { firstName, lastName, email, password, confirmPassword,code } = req.body;
+    if (password !== confirmPassword) return next(new ErrorResponse("Passwords do not match"));
+
   let doctor = await Doctor.findOne({ email: req.body.email });
   if (doctor) return next(new ErrorResponse(`email or pass omvalid `))
   const specialCode= await Code.findOne({code:req.body.code})
   console.log(specialCode.emailDoc)
   if(!specialCode||specialCode.emailDoc!="") return next(new ErrorResponse(`check you input data`))
-  const  newdoctor = new Doctor({
-      firstName:req.body.firstName,
-      lastName:req.body.lastName,
-      email:req.body.email,
-      password:req.body.password,
-      code:req.body.code,
+  if (password !== confirmPassword) {
+    return next(new ErrorResponse("Passwords do not match"));
+  }
+
+  doctor = new Doctor({
+    firstName: firstName,
+    lastName: lastName,
+    email: email,
+    password: password,
+    confirmPassword:confirmPassword,
+    code:code
+  });
+  // const  newdoctor = new Doctor({
+  //     firstName:req.body.firstName,
+  //     lastName:req.body.lastName,
+  //     email:req.body.email,
+  //     password:req.body.password,
+  //     confirmPassword:req.body.confirmPassword,
+  //     code:req.body.code,
     
-    
-  })
+  // })
+
+ 
+
+
   const salt = await bcrypt.genSalt(10);  
-  specialCode.emailDoc=newdoctor.email
+  specialCode.emailDoc=doctor.email
   await specialCode.save()
-  newdoctor.password = await bcrypt.hash(newdoctor.password, salt);
-  const saveddoctor= await newdoctor.save();
+  doctor.password = await bcrypt.hash(doctor.password, salt);
+  doctor.confirmPassword = await bcrypt.hash(doctor.confirmPassword, salt);
+  const saveddoctor= await doctor.save();
   res
-    .header("x-auth-token", newdoctor.generateAuthToken())
+    .header("x-auth-token", doctor.generateAuthToken())
     .status(200)
     .json({saveddoctor});}
     catch(err){

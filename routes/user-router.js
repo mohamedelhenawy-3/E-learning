@@ -11,7 +11,8 @@ const {
   updateProfile,
   updateUser,
   deleteProfilePicture,
-  getUserProfile
+  getUserProfile,
+  lecView
 } = require("../Controllers/userController");
 
 router.get("/",[auth,admin],getUsers); 
@@ -22,7 +23,8 @@ router.put("/updateProfile/:userId",[auth],Upload.single('image'),updateProfile)
 router.put("/:userId",[auth],updateUser);
 router.delete("/:userId/profileImage",[auth],deleteProfilePicture)
 router.get('/:userId/userProfile',[auth],getUserProfile)
-
+//lecture view 
+router.get('/:userId/:courseId/:lectureId',[auth],lecView)
 
 module.exports=router;
 

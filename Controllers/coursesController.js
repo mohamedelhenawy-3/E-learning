@@ -56,35 +56,6 @@ const searchAboutUser = async (req, res) => {
 };
 
 
-// const searchAboutUser=async (req, res) => {
-//   try {
-//     const course = await Course.findById(req.params.id);
-//     if (!course) return res.status(404).send('Course not found.');
-
-//     const quiz = course.quizzes.id(req.params.quizId);
-//     if (!quiz) return res.status(404).send('Quiz not found.');
-
-//     const { firstName, lastName } = req.body;
-
-//     const user = await User.findOne({ firstName, lastName });
-//     if (!user) return res.status(404).send('User not found.');
-
-//     const userQuiz = user.infoQuizs.find((q) => q.quizId == req.params.quizId);
-//     if (!userQuiz) return res.status(404).send('User quiz not found.');
-
-//     const result = {
-//       firstName: user.firstName,
-//       lastName: user.lastName,
-//       quizMark: quiz.mark,
-//       userMark: userQuiz.usermark,
-//     };
-
-//     res.send(result);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Server error.');
-//   }
-// };
 
 const courseDetails = async (req, res, next) => {
   try {
