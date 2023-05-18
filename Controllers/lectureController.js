@@ -6,6 +6,7 @@ const { sendNotify } = require("../utils/sendNotifications");
 const { formateDuration } = require("../utils/formateDuration");
 const {parseDuration}=require("../utils/parseDuration")
 
+const ErrorResponse=require('../utils/errorResponse')
 
 const addLecture = async (req, res, next) => {
   try {
@@ -18,7 +19,8 @@ const addLecture = async (req, res, next) => {
         courseName: course.courseName
       });
       if (existingLecture) {
-        return res.status(400).json({ error: "Lecture with the same title already exists in the course" });
+        return next(new ErrorResponse("Lecture with the same title already exists in the course"));
+
       }
 
       const lec = new Lec({
@@ -87,7 +89,7 @@ const updatelectureForVedios = async (req, res, next) => {
     if (req.user.id == lec.doctorData.doctorId) {
       const videos = [];
       if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ error: "No files uploaded" });
+        return next(new ErrorResponse("No files uploaded"));
       }
       var totalDuration=0;
       for (let i = 0; i < req.files.length; i++) {

@@ -13,11 +13,6 @@ const ErrorResponse=require('../utils/errorResponse')
 
 userForgetPassword=async (req, res,next) => {
     try {
-
-
-      const { error } = validatePassword(req.body);
-      if (error) return next(new ErrorResponse(error.details[0].message));
-      
       const { email } = req.body;
   
       // Find the user by email
@@ -68,8 +63,7 @@ userForgetPassword=async (req, res,next) => {
   userResetPassword=async (req, res,next) => {
     try {
       
-      const { error } = validatePassword(req.body);
-      if (error) return next(new ErrorResponse(error.details[0].message));
+  
 
       const { token } = req.params;
       const { password } = req.body;
@@ -125,10 +119,7 @@ userForgetPassword=async (req, res,next) => {
 
 doctorForgetPassword=async (req, res,next) => {
     try {
-            
-      const { error } = validatePassword(req.body);
-      if (error) return next(new ErrorResponse(error.details[0].message));
-
+          
       const { email } = req.body;
   
       // Find the doctor by email
@@ -178,9 +169,6 @@ doctorForgetPassword=async (req, res,next) => {
   doctorResetPassword=async (req, res) => {
     try {
 
-
-      const { error } = validatePassword(req.body);
-      if (error) return next(new ErrorResponse(error.details[0].message));
 
         const { token } = req.params;
         const { password } = req.body;

@@ -16,7 +16,7 @@ const SignUp=async(req,res,next)=>{
   let doctor = await Doctor.findOne({ email: req.body.email });
   if (doctor) return next(new ErrorResponse(`email or pass omvalid `))
   const specialCode= await Code.findOne({code:req.body.code})
-  console.log(specialCode.emailDoc)
+   
   if(!specialCode||specialCode.emailDoc!="") return next(new ErrorResponse(`check you input data`))
   if (password !== confirmPassword) {
     return next(new ErrorResponse("Passwords do not match"));
@@ -62,7 +62,7 @@ const SignUp=async(req,res,next)=>{
     try {
       const doctor = await Doctor.findById(req.params.doctorId).populate('courses');
       if (!doctor) {
-        return res.status(404).send('Doctor not found');
+        return next(new ErrorResponse("Doctor not found"));
       }
       const doctorProfile = {
         firstName: doctor.firstName,

@@ -31,17 +31,18 @@ const searchAboutUser = async (req, res) => {
 
     console.log(quiz)
     const quizResponse = course.quizResponses.find(response => response.quizId.equals(quiz._id));
-    if (!quizResponse) return res.status(404).send('Quiz response not found.');
+
+    if (!quizResponse)    return next(new ErrorResponse('Quiz response not found.'));
 
     console.log(quizResponse.quizMark)
 
     const { firstName, lastName } = req.body;
 
     const user = await User.findOne({ firstName, lastName });
-    if (!user) return res.status(404).send('User not found.');
+    if (!user) return next(new ErrorResponse('User not found.'));
 
     const userQuiz = user.infoQuizs.find((q) => q.quizId == req.params.quizId);
-    if (!userQuiz) return res.status(404).send('User quiz not found.');
+    if (!userQuiz)  return next(new ErrorResponse('User quiz not found.'));
 
     const result = {
       quizMark: quizResponse.quizMark,

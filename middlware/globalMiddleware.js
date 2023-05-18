@@ -1,24 +1,9 @@
-const ErrorResponse = require("../utils/errorResponse");
-
 const errorHandler = (err, req, res, next) => {
-  let error = {...err}
-     error.message=err.message
-    if(err.name === 'CastError'){
-      const message=`${err.value}`
-      error= new ErrorResponse(message,404)
-    }
-    //mongo dublicate key
-    if(err.code === 11000){
-      const message="Dublicate field value enterd"
-      error= new  ErrorResponse(message,404)
-    }
-    //mongoose validation error
-    if(err.name === 'ValidationError'){
-      const message=Object.values(err.errors).map(val=> val.message)
-      error=new ErrorResponse(message,404)
-    }
-    res.status(error.statusCode||500).json({
-      error: err.message||'Server Error'
+  err.statusCode=err.statusCode||500;
+  err.status=err.status||'error'
+    res.status(err.statusCode||500).json({
+      status:err.status,
+      message:err.message,
     });
 
   };

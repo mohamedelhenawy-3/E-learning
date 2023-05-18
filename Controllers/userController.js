@@ -45,7 +45,7 @@ const SignUp=async (req, res,next) => {
 const getUserProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId)
-    if (!user) return res.status(404).send('User not found');
+    if (!user) return next(new ErrorResponse("user doesnt exists "));
     
     // modify userProfile object to show required fields only
     const userProfile = {
@@ -89,7 +89,7 @@ const getUserProfile = async (req, res, next) => {
   const enrolledCourses=async(req,res,next)=>{
   try{
     const user=await User.findById(req.params.userId);
-    if (!user) return res.status(404).send('User not found');
+    if (!user)  return  next(new ErrorResponse(`user not found`))
     res.status(200).json({enrolledCourses:user.enrolledCourses});
 
   }catch(err){
@@ -97,7 +97,7 @@ const getUserProfile = async (req, res, next) => {
   }
 
   }
- const lecView=async (req, res) => {
+ const lecView=async (req, res,next) => {
   const userId = req.params.userId;
   const courseId = req.params.courseId;
   const lectureId = req.params.lectureId;
@@ -107,19 +107,19 @@ const getUserProfile = async (req, res, next) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return  next(new ErrorResponse(`user not found`))
     }
 
     // Check if the user is enrolled in the specified course
     if (!user.enrolledCourses.includes(courseId)) {
-      return res.status(400).json({ error: 'User is not enrolled in the course' });
+      return  next(new ErrorResponse('User is not enrolled in the course'))
     }
 
     // Find the lecture by ID
     const lecture = await Lec.findOne({ _id: lectureId, courseId: courseId });
 
     if (!lecture) {
-      return res.status(404).json({ error: 'Lecture not found' });
+      return  next(new ErrorResponse('Lecture not found'))
     }
 
     // Get the specific videos from the lecture
@@ -127,9 +127,8 @@ const getUserProfile = async (req, res, next) => {
 
     // Return the videos to the client
     res.json(videos);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (err) {
+    next(err)
   }
 };
   
