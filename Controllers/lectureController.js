@@ -56,7 +56,10 @@ const addLecture = async (req, res, next) => {
 const updatelectureData = async (req, res, next) => {
   try {
     const lecture = await Lec.findById(req.params.lecId);
-    if (req.user.id == lecture.doctorData.docId) {
+    // console.log(lecture.doctorData.doctorId)
+    // console.log('idforuser',req.user.id)
+    // console.log('doc',lecture.doctorData.docId)
+    if (req.user.id == lecture.doctorData.doctorId) {
       const updatelecture = await Lec.findOneAndUpdate(
         { id: lecture._id },
         {

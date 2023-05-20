@@ -8,7 +8,7 @@ const {
   deleteQuiz
 } = require("../Controllers/quizController");
 
-router.post("/courses/:courseId/quizzes",[auth],addQuiz); 
+router.post("/courses/:courseId/quizze",[auth],addQuiz); 
 router.post("/courses/:courseId/quizzes/:quizId/submit",[auth],submitAnswer); 
 router.get("/:courseId/:quizId",[auth],dataAboutUserSubmitQuiz);
 router.get("/:courseId",x);

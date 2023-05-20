@@ -42,38 +42,71 @@ const SignUp=async (req, res,next) => {
     }
   };
 
+// const getUserProfile = async (req, res, next) => {
+//   try {
+//     const user = await User.findById(req.params.userId)
+//     if (!user) return next(new ErrorResponse("user doesnt exists "));
+    
+//     // modify userProfile object to show required fields only
+//     const userProfile = {
+//       firstName: user.firstName,
+//       lastName: user.lastName,
+//       email: user.email,
+//       enrolledCourses: [],
+//       quizzes: [],
+//       profileimg: {},
+//       createdAt: user.createdAt
+//     };
+//     const enrolledCourses = await Course.find({ _id: { $in: user.enrolledCourses } }, { title: 1 });
+//     const quizzes = await Quiz.find({ userId: user._id }, { quizName: 1, usermark: 1 });
+//     userProfile.enrolledCourses = enrolledCourses;
+//     userProfile.quizzes = quizzes;
+    
+//     if (user.profileimg && user.profileimg.url) {
+//       userProfile.profileimg = {
+//         public_id: user.profileimg.public_id,
+//         url: user.profileimg.url
+//       }
+//     }
+//     res.json(userProfile);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Server error');
+//   }
+// }
 const getUserProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId)
-    if (!user) return next(new ErrorResponse("user doesnt exists "));
-    
-    // modify userProfile object to show required fields only
+      .select('firstName lastName enrolledCourses profileimg quizzes')
+      .populate({
+        path: 'enrolledCourses',
+        select: 'courseName duration averageRating'
+      });
+
+    if (!user) return next(new ErrorResponse("User doesn't exist"));
+
     const userProfile = {
       firstName: user.firstName,
       lastName: user.lastName,
-      email: user.email,
-      enrolledCourses: [],
-      quizzes: [],
+      enrolledCourses: user.enrolledCourses,
       profileimg: {},
+      quizzes: user.quizzes,
       createdAt: user.createdAt
     };
-    const enrolledCourses = await Course.find({ _id: { $in: user.enrolledCourses } }, { title: 1 });
-    const quizzes = await Quiz.find({ userId: user._id }, { quizName: 1, usermark: 1 });
-    userProfile.enrolledCourses = enrolledCourses;
-    userProfile.quizzes = quizzes;
-    
+
     if (user.profileimg && user.profileimg.url) {
       userProfile.profileimg = {
         public_id: user.profileimg.public_id,
         url: user.profileimg.url
-      }
+      };
     }
-    res.send(userProfile);
+
+    res.json(userProfile);
   } catch (error) {
     console.error(error);
     res.status(500).send('Server error');
   }
-}
+};
 
   const getUsers=async(req,res,next)=>{
     try{
@@ -88,7 +121,10 @@ const getUserProfile = async (req, res, next) => {
 
   const enrolledCourses=async(req,res,next)=>{
   try{
-    const user=await User.findById(req.params.userId);
+    const user=await User.findById(req.params.userId).populate({
+      path:"enrolledCourses",
+      select:"courseName  duration averageRating"
+    });
     if (!user)  return  next(new ErrorResponse(`user not found`))
     res.status(200).json({enrolledCourses:user.enrolledCourses});
 
@@ -97,6 +133,8 @@ const getUserProfile = async (req, res, next) => {
   }
 
   }
+ 
+  
  const lecView=async (req, res,next) => {
   const userId = req.params.userId;
   const courseId = req.params.courseId;
@@ -122,9 +160,9 @@ const getUserProfile = async (req, res, next) => {
       return  next(new ErrorResponse('Lecture not found'))
     }
 
-    // Get the specific videos from the lecture
+    // // Get the specific videos from the lecture
     const videos = lecture.vedios;
-
+  
     // Return the videos to the client
     res.json(videos);
   } catch (err) {
@@ -133,35 +171,45 @@ const getUserProfile = async (req, res, next) => {
 };
   
 
-  const updateProfile=async(req,res,next)=>{
-    try {
-    
-  
-      const user = await User.findById(req.params.userId);
-  
-      const cloudinary = await Cloudinary.uploader.upload(req.file.path, {
-        folder: `/usersProfiles/${user._id}`
-      })
-      console.log(req.file)
-      const updateUser = user;
-      if (updateUser.profileimg) {
-        updateUser.profileimg.public_id = cloudinary.public_id;
-        updateUser.profileimg.url = cloudinary.url;
-      } else {
-        updateUser.profileimg = {
-          public_id: cloudinary.public_id,
-          url: cloudinary.url
-        };
-      }
-  
-      const update = await updateUser.save();
-      res.status(200).json({
-        update
-      });
-    } catch (err) {
-      next(err)
+const updateProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.userId);
+
+    const cloudinaryOptions = {
+      folder: `/usersProfiles/${user._id}`,
+      quality: 'auto:low', // Set the quality to low
+      transformation: [
+        { width: 300, height: 300, crop: 'limit' } // Resize the image to a smaller size
+      ]
+    };
+
+    const cloudinaryResponse = await Cloudinary.uploader.upload(
+      req.file.path,
+      cloudinaryOptions
+    );
+
+    console.log(req.file);
+
+    const updateUser = user;
+    if (updateUser.profileimg) {
+      updateUser.profileimg.public_id = cloudinaryResponse.public_id;
+      updateUser.profileimg.url = cloudinaryResponse.url;
+    } else {
+      updateUser.profileimg = {
+        public_id: cloudinaryResponse.public_id,
+        url: cloudinaryResponse.url
+      };
     }
-}
+
+    await updateUser.save();
+    res.status(200).json({
+      message: 'Profile image updated successfully'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const updateUser=async(req,res,next)=>{
     try{
        const updateData=await User.findOneAndUpdate({"id":req.params.userId},{

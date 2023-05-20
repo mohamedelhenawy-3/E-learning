@@ -47,13 +47,16 @@ const userSchema = new Schema({
     public_id: {
       //
       type: String,
+      default: ' '
     },
     url: {
       type: String,
+      default:' '
     },
   },
   enrolledCourses: {
     type: [Schema.Types.ObjectId],
+    ref: 'Course',
     default: [],
   },
   infoQuizs: [

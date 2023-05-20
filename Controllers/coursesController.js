@@ -64,12 +64,12 @@ const courseDetails = async (req, res, next) => {
     const userId = req.user.id;
 
     const course = await Course.findOne({ _id: courseId, enroll: userId })
-      .populate('doctorData.doctorId', 'firstName lastName')
+      .populate('doctorData.doctorId', 'firstName')
       .populate({
-        path: 'quizResponses',
-        match: { userId: userId },
-        populate: { path: 'quizId', select: 'quizName' }
+        path: 'lectureId',
+        select: 'title',
       })
+      .select('doctorData _id courseName description reviews averageRating duration')
       .exec();
 
     if (!course) {
@@ -80,7 +80,8 @@ const courseDetails = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-}
+};
+
 
 
 

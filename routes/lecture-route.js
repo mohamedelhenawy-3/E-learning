@@ -17,7 +17,7 @@ const {
 } = require("../Controllers/lectureController");
 
 router.post("/:courseId/:docId",[auth],addLecture); 
-router.post("/lectureData/:lecId",[auth],updatelectureData); 
+router.put("/lectureData/:lecId",[auth],updatelectureData); 
 router.put( "/lec/:id/videos",[auth],Upload.array("files"),updatelectureForVedios); 
 router.put( "/:id/imag",[auth],Upload.single("image"),updatelectureForImg); 
 router.delete("/:lecId/course/:id",[auth],deleteLecture); 
