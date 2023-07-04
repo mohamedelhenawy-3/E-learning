@@ -75,14 +75,13 @@ const courseSchema = new Schema({
     type: String,
     required: true,
     default: "00:00:00",
-  },
-  assignments: [
+  },  enroll: [
     {
       type: Schema.Types.ObjectId,
-      ref: "Assignment",
+      ref: "User",
     },
-  ],
-  posts: [
+  ]
+    posts: [
     {
       type: Schema.Types.ObjectId,
       ref: "Post",

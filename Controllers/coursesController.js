@@ -7,10 +7,14 @@ const { User } = require("../Models/user-model");
 
 const getCourse = async (req, res, next) => {
   try {
-    const course = await Course.findById(req.params.id).select('courseName doctorData description  reviews averageRating  duration') .populate({
-      path: 'reviews',
-      select: 'title text rating'
-    });
+    const course = await Course.findById(req.params.id)
+      .select(
+        "courseName doctorData description  reviews averageRating  duration"
+      )
+      .populate({
+        path: "reviews",
+        select: "title text rating",
+      });
     if (!course)
       return next(
         new ErrorResponse(`Cant find Cours with id ${req.params.id}`)
@@ -24,25 +28,28 @@ const getCourse = async (req, res, next) => {
 const searchAboutUser = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-    if (!course) return res.status(404).send('Course not found.');
+    if (!course) return res.status(404).send("Course not found.");
 
     const quiz = course.getQuizById(req.params.quizId);
-    if (!quiz) return res.status(404).send('Quiz not found.');
+    if (!quiz) return res.status(404).send("Quiz not found.");
 
-    console.log(quiz)
-    const quizResponse = course.quizResponses.find(response => response.quizId.equals(quiz._id));
+    console.log(quiz);
+    const quizResponse = course.quizResponses.find((response) =>
+      response.quizId.equals(quiz._id)
+    );
 
-    if (!quizResponse)    return next(new ErrorResponse('Quiz response not found.'));
+    if (!quizResponse)
+      return next(new ErrorResponse("Quiz response not found."));
 
-    console.log(quizResponse.quizMark)
+    console.log(quizResponse.quizMark);
 
     const { firstName, lastName } = req.body;
 
     const user = await User.findOne({ firstName, lastName });
-    if (!user) return next(new ErrorResponse('User not found.'));
+    if (!user) return next(new ErrorResponse("User not found."));
 
     const userQuiz = user.infoQuizs.find((q) => q.quizId == req.params.quizId);
-    if (!userQuiz)  return next(new ErrorResponse('User quiz not found.'));
+    if (!userQuiz) return next(new ErrorResponse("User quiz not found."));
 
     const result = {
       quizMark: quizResponse.quizMark,
@@ -52,11 +59,9 @@ const searchAboutUser = async (req, res) => {
     res.send(result);
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error.');
+    res.status(500).send("Server error.");
   }
 };
-
-
 
 const courseDetails = async (req, res, next) => {
   try {
@@ -64,16 +69,21 @@ const courseDetails = async (req, res, next) => {
     const userId = req.user.id;
 
     const course = await Course.findOne({ _id: courseId, enroll: userId })
-      .populate('doctorData.doctorId', 'firstName')
+      .populate("doctorData.doctorId", "firstName")
       .populate({
-        path: 'lectureId',
-        select: 'title',
+        path: "lectureId",
+        select: "title",
       })
-      .select('doctorData _id courseName description reviews averageRating duration')
+      .select("doctorData _id courseName description  averageRating duration")
       .exec();
 
     if (!course) {
-      return next(new ErrorResponse(`User is not enrolled in course with id ${courseId}`, 404));
+      return next(
+        new ErrorResponse(
+          `User is not enrolled in course with id ${courseId}`,
+          404
+        )
+      );
     }
 
     res.status(200).json(course);
@@ -81,9 +91,6 @@ const courseDetails = async (req, res, next) => {
     next(err);
   }
 };
-
-
-
 
 const postCourse = async (req, res, next) => {
   try {
@@ -139,13 +146,13 @@ const updateCourse = async (req, res, next) => {
     const courseId = req.params.id;
     const course = await Course.findById(courseId);
     if (!course) {
-      return next(new ErrorResponse('cant find this course'))
+      return next(new ErrorResponse("cant find this course"));
     }
 
     const userId = req.user.id;
     const user = await User.findById(userId);
     if (!user) {
-      return next(new ErrorResponse( 'cant find this use'))
+      return next(new ErrorResponse("cant find this use"));
     }
 
     if (user.enrolledCourses.includes(courseId)) {
@@ -161,14 +168,17 @@ const updateCourse = async (req, res, next) => {
     next(err);
   }
 };
-
-const deleteCourse = async (req, res,next) => {
+const deleteCourse = async (req, res, next) => {
   try {
-    const course = await Course.findById(req.params.courseId).populate("lectureId");
+    const course = await Course.findById(req.params.courseId).populate(
+      "lectureId"
+    );
     if (req.user.id == course.doctorData.doctorId) {
       if (!course)
         return next(
-          new ErrorResponse(`Cant find Course with rhis id : ${req.params.courseId}`)
+          new ErrorResponse(
+            `Cant find Course with rhis id : ${req.params.courseId}`
+          )
         );
       course.lectureId.map(async (lecture) => {
         await Lecture.findByIdAndDelete(lecture._id);
@@ -190,7 +200,7 @@ const deleteCourse = async (req, res,next) => {
           }
         );
       }
-      res.json({message:"course delete successfully "})
+      res.json({ message: "course delete successfully " });
     }
   } catch (err) {
     next(err);
@@ -210,9 +220,9 @@ const getquizResponses = async (req, res) => {
   const { courseId } = req.params;
 
   try {
-    const course = await Course.findById(courseId)
+    const course = await Course.findById(courseId);
     if (!course) {
-      return next(new ErrorResponse( 'Course not found'))
+      return next(new ErrorResponse("Course not found"));
     }
     const user = await User.findById(req.user._id);
     console.log(course.doctorData);
@@ -241,5 +251,5 @@ module.exports = {
   updateCourseData,
   getCourses,
   courseDetails,
-  searchAboutUser
+  searchAboutUser,
 };

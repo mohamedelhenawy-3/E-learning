@@ -71,23 +71,16 @@ const courseSchema = new Schema({
     type: Number,
     default: null,
   },
-  duration: {
-    type: String,
+  duration:{
+    type:String,
     required: true,
-    default: "00:00:00",
+    default: '00:00:00'
   },
-  assignments: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Assignment",
-    },
-  ],
-  posts: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Post",
-    },
-  ],
+  posts: [{
+    type: Schema.Types.ObjectId,
+    ref: "Post",
+  }]
+  
 });
 const validateCourse = (course) => {
   const schema = Joi.object({
@@ -106,6 +99,7 @@ const validateCourse = (course) => {
 courseSchema.methods.getQuizById = function (quizId) {
   return this.quizzes.find((quiz) => quiz._id.toString() === quizId.toString());
 };
+
 
 module.exports = {
   Course: mongoose.model("Course", courseSchema),

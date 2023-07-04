@@ -76,12 +76,6 @@ const courseSchema = new Schema({
     required: true,
     default: "00:00:00",
   },
-  assignments: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Assignment",
-    },
-  ],
   posts: [
     {
       type: Schema.Types.ObjectId,
