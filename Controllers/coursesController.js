@@ -62,20 +62,56 @@ const searchAboutUser = async (req, res) => {
     res.status(500).send("Server error.");
   }
 };
+const courseDet = async (req, res, next) => {
+  try {
+    const courseId = req.params.courseId;
+    const userId = req.user.id;
+    const course = await Course.findById(courseId);
+    console.log(course);
+    if (course.doctorData.doctorId == userId) {
+      const course = await Course.findOne({ _id: courseId })
+        .populate({
+          path: "quizzes",
+          select: "quizname",
+        })
+        .populate({
+          path: "lectureId",
+          select: "title",
+        })
+        .select("lectureId quizzes");
 
+      if (!course) {
+        return next(
+          new ErrorResponse(
+            `User is not enrolled in course with id ${courseId}`,
+            404
+          )
+        );
+      }
+
+      res.status(200).json(course);
+    } else {
+      res.send("fuck u");
+    }
+  } catch (err) {
+    next(err);
+  }
+};
 const courseDetails = async (req, res, next) => {
   try {
     const courseId = req.params.courseId;
     const userId = req.user.id;
 
     const course = await Course.findOne({ _id: courseId, enroll: userId })
-      .populate("doctorData.doctorId", "firstName")
+      .populate({
+        path: "quizzes",
+        select: "quizname",
+      })
       .populate({
         path: "lectureId",
         select: "title",
       })
-      .select("doctorData _id courseName description  averageRating duration")
-      .exec();
+      .select("lectureId quizzes");
 
     if (!course) {
       return next(
@@ -252,4 +288,5 @@ module.exports = {
   getCourses,
   courseDetails,
   searchAboutUser,
+  courseDet,
 };

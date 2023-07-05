@@ -121,7 +121,7 @@ const enrolledCourses = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId).populate({
       path: "enrolledCourses",
-      select: "courseName  duration averageRating",
+      select: "courseName  duration averageRating description",
     });
     if (!user) return next(new ErrorResponse(`user not found`));
     res.status(200).json({ enrolledCourses: user.enrolledCourses });

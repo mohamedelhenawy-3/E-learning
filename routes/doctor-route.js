@@ -10,6 +10,7 @@ const {
   updateProfile,
   updateDoctor,
   deleteProfilePicture,
+  lecDetails,
 } = require("../Controllers/doctorConrtoller");
 
 router.get("/", [auth, admin], getAllDoctors);
@@ -23,5 +24,5 @@ router.put(
 router.put("/:doctorId", [auth], updateDoctor);
 router.delete("/:doctorId/profileImage", [auth], deleteProfilePicture);
 router.get("/:doctorId/doctorProfile", [auth], getDoctorProfile);
-
+router.get("/:doctorId/:courseId/:lectureId", [auth], lecDetails);
 module.exports = router;

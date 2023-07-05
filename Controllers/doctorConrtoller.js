@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const ErrorResponse = require("../utils/errorResponse");
 const Code = require("../Models/specialCode-model");
 const { Course } = require("../Models/course-model");
+const { Lec } = require("../Models/lec-model");
 
 const SignUp = async (req, res, next) => {
   try {
@@ -131,9 +132,40 @@ const updateDoctor = async (req, res, next) => {
   }
 };
 
+const lecDetails = async (req, res, next) => {
+  const doctorId = req.params.doctorId;
+  const courseId = req.params.courseId;
+  const lectureId = req.params.lectureId;
+
+  try {
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    // Check if the logged-in user is the same as the doctor who created the course
+    if (doctorId !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to access this course" });
+    }
+
+    const lecture = await Lec.findOne({ _id: lectureId, courseId: courseId });
+    if (!lecture) {
+      return res.status(404).json({ message: "Lecture not found" });
+    }
+
+    const videos = lecture.vedios;
+    res.status(200).json(videos);
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = lecDetails;
+
 const deleteProfilePicture = async (req, res, next) => {
   try {
-    c;
     const doctor = await Doctor.findById(req.params.doctorId);
     if (doctor._id == req.user.id) {
       if (doctor.profileimg.length != 0) {
@@ -170,4 +202,5 @@ module.exports = {
   updateDoctor,
   getDoctorProfile,
   deleteProfilePicture,
+  lecDetails,
 };
