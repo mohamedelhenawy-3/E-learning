@@ -17,7 +17,7 @@ router.get(
   dataAboutUserSubmitQuiz
 );
 router.get("/:courseId", x);
-router.get("/:Quizid", [auth], getQuiz);
+router.get("/:Quizid/:Courseid", [auth], getQuiz);
 router.delete("/:quizId/:courseId", [auth], deleteQuiz);
 
 module.exports = router;
