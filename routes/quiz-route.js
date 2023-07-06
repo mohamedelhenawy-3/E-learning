@@ -7,6 +7,7 @@ const {
   getQuiz,
   x,
   deleteQuiz,
+  getQuizz,
 } = require("../Controllers/quizController");
 
 router.post("/courses/:courseId/quizzes", [auth], addQuiz);
@@ -17,7 +18,9 @@ router.get(
   dataAboutUserSubmitQuiz
 );
 router.get("/:courseId", x);
+//by user
 router.get("/:Quizid/:Courseid", [auth], getQuiz);
 router.delete("/:quizId/:courseId", [auth], deleteQuiz);
+router.get("/:quizId/:courseId/forDoc", [auth], getQuizz);
 
 module.exports = router;

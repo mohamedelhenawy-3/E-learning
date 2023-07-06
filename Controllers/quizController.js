@@ -193,6 +193,37 @@ const dataAboutUserSubmitQuiz = async (req, res, next) => {
     next(err);
   }
 };
+const getQuizz = async (req, res, next) => {
+  const docId = req.user.id;
+  try {
+    const courseId = req.params.courseId;
+    const quizId = req.params.quizId;
+    const course = await Course.findById(courseId);
+    if (docId == course.doctorData.doctorId) {
+      const course = await Course.findById(courseId).populate({
+        path: "quizzes",
+        populate: "questions",
+      });
+
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+      // Find the specific quiz in the course
+      const quiz = course.getQuizById(quizId);
+
+      if (!quiz) {
+        return res.status(404).json({ error: "Quiz not found" });
+      }
+
+      // Return the quiz
+      res.json({ quiz });
+    } else {
+      res.status(403).json({ error: "User is not enrolled in the course" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
 const getQuiz = async (req, res, next) => {
   const userId = req.user.id; // Assuming you have middleware that adds the authenticated user to the request object
 
@@ -271,4 +302,5 @@ module.exports = {
   getQuiz,
   x,
   deleteQuiz,
+  getQuizz,
 };
