@@ -15,11 +15,15 @@ const getCourse = async (req, res, next) => {
         path: "reviews",
         select: "title text rating",
       });
-    if (!course)
-      return next(
-        new ErrorResponse(`Cant find Cours with id ${req.params.id}`)
-      );
-    res.status(200).json(course);
+    if (course.doctorData.doctorId == req.user.id) {
+      if (!course)
+        return next(
+          new ErrorResponse(`Cant find Cours with id ${req.params.id}`)
+        );
+      res.status(200).json(course);
+    } else {
+      new ErrorResponse(`unauthorized `);
+    }
   } catch (err) {
     next(err);
   }
