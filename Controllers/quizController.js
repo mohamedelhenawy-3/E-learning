@@ -127,9 +127,8 @@ const submitAnswer = async (req, res, next) => {
       });
       await course.save();
     }
-    const score = `${totalScore} ${quizMark}`;
-    console.log(typeof score);
-    res.status(200).json({ score });
+    const formattedMessage = `${totalScore}`.replace(/\s+/g, ""); // Remove spaces
+    res.status(200).json(formattedMessage.toString());
   } catch (err) {
     next(err);
   }
