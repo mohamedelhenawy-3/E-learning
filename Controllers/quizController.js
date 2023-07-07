@@ -295,6 +295,50 @@ const deleteQuiz = async (req, res, next) => {
     next(err);
   }
 };
+const searchAboutUser = async (req, res, next) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).send("Course not found.");
+
+    const quiz = course.getQuizById(req.params.quizId);
+    if (!quiz) return res.status(404).send("Quiz not found.");
+
+    const quizResponse = course.quizResponses.find(
+      (response) =>
+        response.quizId.equals(quiz._id) && response.userId.equals(req.user.id)
+    );
+    console.log("quizResponse", quizResponse);
+
+    if (!quizResponse) {
+      return res.status(404).json({
+        status: "error",
+        message: "Quiz response not found.",
+      });
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return next(new ErrorResponse("User not found."));
+
+    const userQuiz = user.infoQuizs.find(
+      (q) => q.quizId.toString() === req.params.quizId.toString()
+    );
+    if (!userQuiz) return next(new ErrorResponse("User quiz not found."));
+
+    const result = {
+      userMark: userQuiz.usermark,
+      quizMark: quizResponse.quizMark,
+      userData: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    };
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error.");
+  }
+};
 
 module.exports = {
   addQuiz,
@@ -304,4 +348,5 @@ module.exports = {
   x,
   deleteQuiz,
   getQuizz,
+  searchAboutUser,
 };
