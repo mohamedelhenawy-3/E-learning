@@ -281,6 +281,36 @@ const getquizResponses = async (req, res) => {
     res.status(500).send("An error occurred while fetching quiz responses.");
   }
 };
+const courseInfo = async (req, res, next) => {
+  try {
+    const courseId = req.params.courseId;
+    const userId = req.user.id;
+
+    const course = await Course.findOne({ _id: courseId, enroll: userId })
+      .populate({
+        path: "quizzes",
+        select: "quizname",
+      })
+      .populate({
+        path: "lectureId",
+        select: "title",
+      })
+      .select("lectureId quizzes doctorData courseName description");
+
+    if (!course) {
+      return next(
+        new ErrorResponse(
+          `User is not enrolled in course with id ${courseId}`,
+          404
+        )
+      );
+    }
+
+    res.status(200).json(course);
+  } catch (err) {
+    next(err);
+  }
+};
 
 module.exports = {
   getquizResponses,
@@ -293,4 +323,5 @@ module.exports = {
   courseDetails,
   searchAboutUser,
   courseDet,
+  courseInfo,
 };
