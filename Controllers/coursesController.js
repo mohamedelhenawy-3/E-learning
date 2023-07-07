@@ -311,7 +311,43 @@ const courseInfo = async (req, res, next) => {
     next(err);
   }
 };
+const courseInfomation = async (req, res, next) => {
+  try {
+    const courseId = req.params.courseId;
+    const dpctorId = req.user.id;
+    const course = await Course.findOne({ _id: courseId })
+      .populate({
+        path: "quizzes",
+        select: "quizname",
+      })
+      .populate({
+        path: "lectureId",
+        select: "title",
+      })
+      .select("lectureId quizzes doctorData courseName description");
+    if (dpctorId == course.doctorData.doctorId) {
+      if (!course) {
+        return next(
+          new ErrorResponse(
+            `User is not enrolled in course with id ${courseId}`,
+            404
+          )
+        );
+      }
 
+      res.status(200).json(course);
+    } else {
+      return next(
+        new ErrorResponse(
+          `User is not enrolled in course with id ${courseId}`,
+          404
+        )
+      );
+    }
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
   getquizResponses,
   getCourse,
@@ -324,4 +360,5 @@ module.exports = {
   searchAboutUser,
   courseDet,
   courseInfo,
+  courseInfomation,
 };
