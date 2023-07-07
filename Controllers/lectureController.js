@@ -5,6 +5,7 @@ const Cloudinary = require("../utils/clouodinry");
 const { sendNotify } = require("../utils/sendNotifications");
 const { formateDuration } = require("../utils/formateDuration");
 const { parseDuration } = require("../utils/parseDuration");
+const { User } = require("../Models/user-model");
 
 const ErrorResponse = require("../utils/errorResponse");
 
@@ -88,7 +89,7 @@ const updatelectureData = async (req, res, next) => {
     next(err);
   }
 };
-const getLecture = async (req, res) => {
+const getLecture = async (req, res, next) => {
   try {
     const { lectureId, courseId } = req.params;
 
@@ -117,8 +118,7 @@ const getLecture = async (req, res) => {
     // Return the lecture
     res.json({ lecture });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
+    next(error);
   }
 };
 
@@ -225,7 +225,32 @@ const deleteLecture = async (req, res, next) => {
     next(err);
   }
 };
+const getLectureForuser = async (req, res, next) => {
+  try {
+    const { lectureId } = req.params;
+    const userId = req.user.id;
 
+    // Find the enrolled courses for the user
+    const enrolledCourses = await Course.find({ enroll: userId }).populate(
+      "lectureId"
+    );
+
+    // Find the lecture with the matching lectureId in the enrolled courses
+    const lecture = enrolledCourses
+      .flatMap((course) => course.lectureId)
+      .find((lec) => lec._id.toString() === lectureId);
+
+    // Check if the lecture exists
+    if (!lecture) {
+      return res.status(404).json({ error: "Lecture not found" });
+    }
+
+    // Return the lecture
+    res.json({ lecture });
+  } catch (error) {
+    next(error);
+  }
+};
 module.exports = {
   addLecture,
   updatelectureData,
@@ -233,4 +258,5 @@ module.exports = {
   deleteLecture,
   updatelectureForImg,
   getLecture,
+  getLectureForuser,
 };

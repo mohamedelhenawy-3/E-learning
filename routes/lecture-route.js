@@ -11,6 +11,7 @@ const {
   deleteLecture,
   updatelectureForImg,
   getLecture,
+  getLectureForuser,
 } = require("../Controllers/lectureController");
 
 router.post("/:courseId/:docId", [auth], addLecture);
@@ -24,5 +25,6 @@ router.put(
 router.put("/:id/imag", [auth], Upload.single("image"), updatelectureForImg);
 router.delete("/:lecId/course/:id", [auth], deleteLecture);
 router.get("/lec/:lectureId/course/:courseId", [auth], getLecture);
+router.get("/hhh/:lectureId", [auth], getLectureForuser);
 
 module.exports = router;
