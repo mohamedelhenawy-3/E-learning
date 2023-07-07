@@ -46,5 +46,5 @@ const validateQuestion = (question) => {
 
 module.exports = {
   Question: mongoose.model("Question", questionSchema),
-  validateQuestion:validateQuestion
+  validateQuestion: validateQuestion,
 };

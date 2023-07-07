@@ -1,5 +1,5 @@
 const { Question } = require("../Models/questions-model");
-const { Quiz, validateQuiz } = require("../Models/quiz.model");
+const { Quiz } = require("../Models/quiz.model");
 const { Doctor } = require("../Models/doctor-model");
 const { Course } = require("../Models/course-model");
 const { User } = require("../Models/user-model");
@@ -127,7 +127,9 @@ const submitAnswer = async (req, res, next) => {
       });
       await course.save();
     }
-    res.send(`Your score is ${totalScore} out of ${quizMark}.`);
+    const score = `${totalScore} ${quizMark}`;
+    console.log(typeof score);
+    res.status(200).json({ score });
   } catch (err) {
     next(err);
   }
