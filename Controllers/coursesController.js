@@ -360,9 +360,7 @@ const UpdateCourseData = async (req, res, next) => {
       }
     );
 
-    res
-      .status(200)
-      .json({ message: "Course updated successfully", course: updatedCourse });
+    res.status(200).json({ message: "Course updated successfully" });
   } catch (error) {
     next(error);
   }
