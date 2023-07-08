@@ -78,6 +78,39 @@ const getDoctorProfile = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+const updateDoctorData = async (req, res, next) => {
+  try {
+    const doctorId = req.params.doctorId;
+    const { firstName, lastName } = req.body;
+
+    const doctor = await Doctor.findById(doctorId).populate("courses");
+    if (!doctor) {
+      return next(new ErrorResponse("Doctor not found"));
+    }
+
+    // Update doctor's first name and last name
+    doctor.firstName = firstName;
+    doctor.lastName = lastName;
+    await doctor.save();
+
+    // Update doctor's first name and last name in associated courses
+    await Course.updateMany(
+      { "doctorData.doctorId": doctorId },
+      { $set: { "doctorData.firstName": firstName } }
+    );
+
+    // Update doctor's first name and last name in associated lectures
+    await Lec.updateMany(
+      { "doctorData.doctorId": doctorId },
+      { $set: { "doctorData.doctorName": `${firstName}` } }
+    );
+
+    res.send(doctor);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Server error");
+  }
+};
 
 const getAllDoctors = async (req, res, next) => {
   try {
@@ -114,23 +147,23 @@ const updateProfile = async (req, res, next) => {
     next(err);
   }
 };
-const updateDoctor = async (req, res, next) => {
-  try {
-    const updateData = await Doctor.findOneAndUpdate(
-      { id: req.params.docId },
-      {
-        $set: {
-          firstName: req.body.firstName,
-          lastName: req.body.firstName,
-        },
-      }
-    );
-    await updateData.save();
-    res.status(200).json({ message: "profile data updated success" });
-  } catch (err) {
-    next(err);
-  }
-};
+// const updateDoctor = async (req, res, next) => {
+//   try {
+//     const updateData = await Doctor.findOneAndUpdate(
+//       { id: req.params.docId },
+//       {
+//         $set: {
+//           firstName: req.body.firstName,
+//           lastName: req.body.firstName,
+//         },
+//       }
+//     );
+//     await updateData.save();
+//     res.status(200).json({ message: "profile data updated success" });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 const lecDetails = async (req, res, next) => {
   const doctorId = req.params.doctorId;
@@ -161,8 +194,6 @@ const lecDetails = async (req, res, next) => {
     next(err);
   }
 };
-
-module.exports = lecDetails;
 
 const deleteProfilePicture = async (req, res, next) => {
   try {
@@ -199,7 +230,7 @@ module.exports = {
   SignUp,
   getAllDoctors,
   updateProfile,
-  updateDoctor,
+  updateDoctorData,
   getDoctorProfile,
   deleteProfilePicture,
   lecDetails,

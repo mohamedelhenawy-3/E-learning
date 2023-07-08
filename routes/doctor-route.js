@@ -8,7 +8,7 @@ const {
   getAllDoctors,
   SignUp,
   updateProfile,
-  updateDoctor,
+  updateDoctorData,
   deleteProfilePicture,
   lecDetails,
 } = require("../Controllers/doctorConrtoller");
@@ -21,7 +21,7 @@ router.put(
   Upload.single("image"),
   updateProfile
 );
-router.put("/:doctorId", [auth], updateDoctor);
+router.put("/:doctorId", [auth], updateDoctorData);
 router.delete("/:doctorId/profileImage", [auth], deleteProfilePicture);
 router.get("/:doctorId/doctorProfile", [auth], getDoctorProfile);
 router.get("/:doctorId/:courseId/:lectureId", [auth], lecDetails);

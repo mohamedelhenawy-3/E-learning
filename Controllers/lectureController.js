@@ -8,6 +8,7 @@ const { parseDuration } = require("../utils/parseDuration");
 const { User } = require("../Models/user-model");
 
 const ErrorResponse = require("../utils/errorResponse");
+const { findByIdAndDelete } = require("../Models/specialCode-model");
 
 const addLecture = async (req, res, next) => {
   try {
@@ -56,39 +57,72 @@ const addLecture = async (req, res, next) => {
     next(err);
   }
 };
-
 const updatelectureData = async (req, res, next) => {
   try {
     const lecture = await Lec.findById(req.params.lecId);
-    // console.log(lecture.doctorData.doctorId)
-    // console.log('idforuser',req.user.id)
-    // console.log('doc',lecture.doctorData.docId)
     if (req.user.id == lecture.doctorData.doctorId) {
-      const updatelecture = await Lec.findOneAndUpdate(
-        { id: lecture._id },
+      const updatelecture = await Lec.findByIdAndUpdate(
+        lecture._id,
         {
           $set: {
             title: req.body.title,
-            desc: req.body.desc,
+            description: req.body.description,
           },
-        }
+        },
+        { new: true } // Specify { new: true } to return the updated document
       );
-      const course = await Course.findOne({ name: lecture.courseName });
+
+      const course = await Course.findOne({
+        courseId: lecture.courseData.courseId,
+      });
       // Set duration to unknown since we are no longer calculating it
       await updatelecture.save();
 
       // Send notification to all subscribers of the course, if any
-      const description = `new Lecture named "${lecture.title}" add  in "${course.courseName}" course.`;
+      const description = `New lecture named "${lecture.title}" added in "${course.courseName}" course.`;
       const send = await sendNotify(course._id, description);
       console.log(send);
-      if (send) return res.json({ send: "update data done successful" });
+      if (send) return res.json({ send: "Update data done successfully." });
     } else {
-      res.send("You can only update your own lecture");
+      res.send("You can only update your own lecture.");
     }
   } catch (err) {
     next(err);
   }
 };
+
+// const updatelectureData = async (req, res, next) => {
+//   try {
+//     const lecture = await Lec.findById(req.params.lecId);
+//     // console.log(lecture.doctorData.doctorId)
+//     // console.log('idforuser',req.user.id)
+//     // console.log('doc',lecture.doctorData.docId)
+//     if (req.user.id == lecture.doctorData.doctorId) {
+//       const updatelecture = await Lec.findOneAndUpdate(
+//         { id: lecture._id },
+//         {
+//           $set: {
+//             title: req.body.title,
+//             description: req.body.description,
+//           },
+//         }
+//       );
+//       const course = await Course.findOne({ name: lecture.courseName });
+//       // Set duration to unknown since we are no longer calculating it
+//       await updatelecture.save();
+
+//       // Send notification to all subscribers of the course, if any
+//       const description = `new Lecture named "${lecture.title}" add  in "${course.courseName}" course.`;
+//       const send = await sendNotify(course._id, description);
+//       console.log(send);
+//       if (send) return res.json({ send: "update data done successful" });
+//     } else {
+//       res.send("You can only update your own lecture");
+//     }
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 const getLecture = async (req, res, next) => {
   try {
     const { lectureId, courseId } = req.params;
@@ -190,17 +224,30 @@ const updatelectureForImg = async (req, res, next) => {
 
 const deleteLecture = async (req, res, next) => {
   try {
-    const course = await Course.findById(req.params.id);
-    const lecture = await Lec.findById(req.params.lecId);
+    const courseId = req.params.id;
+    const lectureId = req.params.lecId;
+    const course = await Course.findById(courseId);
+    const lecture = await Lec.findById(lectureId);
     console.log(course.doctorData.doctorId);
-    console.log(lecture.doctorData.docId);
+    console.log(lecture.doctorData.doctorId);
     console.log(req.user.id);
     if (
       req.user.id == course.doctorData.doctorId &&
       req.user.id == lecture.doctorData.doctorId
     ) {
-      if (!lecture) "course not found";
+      if (!lecture) "lec not found";
       await Lec.findByIdAndRemove(lecture);
+
+      await Lec.findByIdAndRemove(lectureId);
+
+      if (course.lectureId.includes(lectureId)) {
+        // Remove lectureId from course
+        course.lectureId = course.lectureId.filter(
+          (id) => id.toString() !== lectureId.toString()
+        );
+        await course.save();
+      }
+
       if (lecture.length != 0) {
         Cloudinary.api.delete_resources_by_prefix(
           `E-learning/courses/${course.courseName}/${lecture.title}`,

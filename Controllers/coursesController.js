@@ -4,6 +4,7 @@ const Cloudinary = require("../utils/clouodinry");
 const { Lecture } = require("../Models/lec-model");
 const ErrorResponse = require("../utils/errorResponse");
 const { User } = require("../Models/user-model");
+const { Lec } = require("../Models/lec-model");
 
 const getCourse = async (req, res, next) => {
   try {
@@ -153,29 +154,6 @@ const postCourse = async (req, res, next) => {
     doctor.courses.push(newcourse._id);
     await doctor.save();
     res.status(200).json({ newcourse });
-  } catch (err) {
-    next(err);
-  }
-};
-const updateCourseData = async (req, res, next) => {
-  try {
-    const { error } = validateCourse(req.body);
-    if (error) return next(new ErrorResponse(error.details[0].message));
-    const course = await Course.findById(req.params.courseId);
-    if (req.user._id == course.doctorData.doctorId) {
-      const updateCourseData = await Course.findOneAndUpdate(
-        { id: course._id },
-        {
-          $set: {
-            courseName: req.body.courseName,
-            description: req.body.description,
-          },
-        }
-      );
-      res.status(200).json(updateCourseData);
-    } else {
-      res.json({ message: "another user want to update the course " });
-    }
   } catch (err) {
     next(err);
   }
@@ -348,17 +326,59 @@ const courseInfomation = async (req, res, next) => {
     next(err);
   }
 };
+const UpdateCourseData = async (req, res, next) => {
+  try {
+    const courseId = req.params.courseId;
+    const { courseName, description } = req.body;
+    const doctorId = req.user.id;
+
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    if (course.doctorData.doctorId !== doctorId) {
+      return res.status(401).json({
+        message: "Unauthorized: You are not the owner of this course",
+      });
+    }
+
+    course.courseName = courseName;
+    course.description = description;
+
+    const updatedCourse = await course.save();
+
+    // Update course data in all related lectures
+    await Lec.updateMany(
+      { "courseData.courseId": courseId },
+      {
+        $set: {
+          "courseData.courseName": courseName,
+          "courseData.courseId": courseId,
+        },
+      }
+    );
+
+    res
+      .status(200)
+      .json({ message: "Course updated successfully", course: updatedCourse });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getquizResponses,
   getCourse,
   postCourse,
   updateCourse,
   deleteCourse,
-  updateCourseData,
   getCourses,
   courseDetails,
   searchAboutUser,
   courseDet,
   courseInfo,
   courseInfomation,
+  UpdateCourseData,
 };

@@ -16,6 +16,10 @@ const quizSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  courseId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course",
+  },
   createdAt: {
     type: Date,
     default: Date.now(),
@@ -34,5 +38,5 @@ const validateQuiz = (quiz) => {
 
 module.exports = {
   Quiz: mongoose.model("Quiz", quizSchema),
-  validateQuiz:validateQuiz
+  validateQuiz: validateQuiz,
 };
