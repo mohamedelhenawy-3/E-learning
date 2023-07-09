@@ -100,7 +100,7 @@ router.get("/doctor/:doctorId/assignment/:assignmentId", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch assignment" });
   }
 });
-//get all assignment response in specifc course
+//get all assignment response in specifc course///////////////////////
 router.get(
   "/courses/:courseId/assignments/:assignmentId/responses",
   [auth],
@@ -233,33 +233,52 @@ router.post(
   }
 );
 //get answers of users by doctor who create it
-router.get("/assignments/:assignmentId/answers", [auth], async (req, res) => {
-  try {
-    const assignmentId = req.params.assignmentId;
-    const doctorId = req.user.id; // Assuming the doctor is authenticated and the doctor ID is stored in req.user
+router.get(
+  "/courses/:courseId/assignments/:assignmentId/answers",
+  [auth],
+  async (req, res) => {
+    try {
+      const courseId = req.params.courseId;
+      const assignmentId = req.params.assignmentId;
+      const doctorId = req.user.id; // Assuming the doctor is authenticated and the doctor ID is stored in req.user
 
-    // Find the assignment by assignmentId
-    const assignment = await Assignment.findOne({
-      _id: assignmentId,
-      doctorId,
-    });
+      // Find the course by courseId and doctorId
+      const course = await Course.findOne({
+        _id: courseId,
+        "doctorData.doctorId": doctorId,
+      });
 
-    if (!assignment) {
-      return res.status(404).json({ error: "Assignment not found" });
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+
+      // Find the assignment by assignmentId and doctorId
+      const assignment = await Assignment.findOne({
+        _id: assignmentId,
+        doctorId,
+        _id: { $in: course.assignments }, // Make sure the assignment belongs to the course
+      });
+
+      if (!assignment) {
+        return res.status(404).json({ error: "Assignment not found" });
+      }
+
+      // Find all the submissions for the assignment
+      const submissions = await AssignmentSubmission.find({
+        assignmentId,
+      }).populate({
+        path: "userId",
+        select: "lastName firstName",
+      });
+
+      res.status(200).json(submissions);
+    } catch (error) {
+      console.error("Failed to retrieve assignment answers:", error);
+      res.status(500).json({ error: "Failed to retrieve assignment answers" });
     }
-
-    // Find all the submissions for the assignment
-    const submissions = await AssignmentSubmission.find().populate({
-      path: "userId",
-      select: "lastName firstName",
-    });
-
-    res.status(200).json(submissions);
-  } catch (error) {
-    console.error("Failed to retrieve assignment answers:", error);
-    res.status(500).json({ error: "Failed to retrieve assignment answers" });
   }
-});
+);
+
 router.post(
   "/courses/:courseId/assignments/:assignmentId/score",
   [auth],

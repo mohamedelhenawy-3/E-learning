@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const Joi = require('joi');
+const mongoose = require("mongoose");
+const Joi = require("joi");
 const jwt = require("jsonwebtoken");
-const crypto=require('crypto')
+const crypto = require("crypto");
 
 const Schema = mongoose.Schema;
 const userSchema = new Schema({
@@ -33,7 +33,7 @@ const userSchema = new Schema({
   },
   password: {
     type: String,
-    required:true,
+    required: true,
     minlength: 5,
     maxlength: 1500,
   },
@@ -47,16 +47,16 @@ const userSchema = new Schema({
     public_id: {
       //
       type: String,
-      default: ' '
+      default: " ",
     },
     url: {
       type: String,
-      default:' '
+      default: " ",
     },
   },
   enrolledCourses: {
     type: [Schema.Types.ObjectId],
-    ref: 'Course',
+    ref: "Course",
     default: [],
   },
   infoQuizs: [
@@ -71,13 +71,12 @@ const userSchema = new Schema({
   ],
   resetPasswordToken: {
     type: String,
-    default: null
+    default: null,
   },
   resetPasswordExpires: {
     type: Date,
-    default: null
-  }
-,
+    default: null,
+  },
   isAdmin: {
     type: Boolean,
     default: false,
@@ -93,18 +92,40 @@ userSchema.methods.generateAuthToken = function () {
   return jwt.sign({ id: this._id, isAdmin: this.isAdmin }, "privateKey"); //returns token
 };
 
+// const validateUser = (user) => {
+//   const schema = Joi.object({
+//     firstName: Joi.string().required().min(1).max(255),
+//     lastName: Joi.string().required().min(1).max(255),
+//     email: Joi.string()
+//       .required()
+//       .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }),
+//       //assword must contain at least one letter ([A-Za-z]) and one digit (\\d), and must be at least 5 characters long ({5,}).
+//     password: Joi.string()
+//       .required()
+//       .pattern(new RegExp('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$')),
+//    confirmPassword: Joi.string().required(),
+//     cloudinary_id: Joi.string(),
+//     url: Joi.string(),
+//     enrolledCourses: Joi.array().items(Joi.string()),
+//     isAdmin: Joi.boolean(),
+//     resetPasswordToken: Joi.string(),
+//     resetPasswordExpires: Joi.date(),
+//     createdAt: Joi.date(),
+//   });
+
+//   return schema.validate(user);
+// };
 const validateUser = (user) => {
   const schema = Joi.object({
-    firstName: Joi.string().required().min(1).max(255),
+    firstName: Joi.string().required().min(3).max(255),
     lastName: Joi.string().required().min(1).max(255),
     email: Joi.string()
       .required()
-      .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } }),
-      //assword must contain at least one letter ([A-Za-z]) and one digit (\\d), and must be at least 5 characters long ({5,}).
+      .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }),
     password: Joi.string()
       .required()
-      .pattern(new RegExp('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$')),
-   confirmPassword: Joi.string().required(),
+      .pattern(new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$")),
+    confirmPassword: Joi.string().required(),
     cloudinary_id: Joi.string(),
     url: Joi.string(),
     enrolledCourses: Joi.array().items(Joi.string()),
@@ -114,11 +135,31 @@ const validateUser = (user) => {
     createdAt: Joi.date(),
   });
 
-  return schema.validate(user);
+  let { error } = schema.validate(user);
+
+  // Additional validation for first name and last name
+  if (!error) {
+    const { firstName, lastName } = user;
+    const firstNameParts = firstName.split(" ");
+    const lastNameParts = lastName.split(" ");
+
+    if (firstNameParts.length < 2 || lastNameParts.length < 2) {
+      error = new Error(
+        "FirstName and lastName must contain at least two names"
+      );
+      error.details = [
+        {
+          path: ["firstName", "lastName"],
+          message: "FirstName and lastName must contain at least two names",
+        },
+      ];
+    }
+  }
+
+  return error ? { error } : { value: user };
 };
 
-
 module.exports = {
-  User: mongoose.model('User', userSchema),
-  validateUser: validateUser
-}
+  User: mongoose.model("User", userSchema),
+  validateUser: validateUser,
+};
