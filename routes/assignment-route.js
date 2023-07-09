@@ -52,6 +52,32 @@ router.get(
     }
   }
 );
+//get all assignment for user enroll in related course
+router.get("/course/:courseId/user/:userId/assignments", async (req, res) => {
+  try {
+    const courseId = req.params.courseId;
+    const userId = req.params.userId;
+
+    // Find the course by courseId and check if the user is enrolled
+    const course = await Course.findOne({ _id: courseId, enroll: userId });
+    if (!course) {
+      return res
+        .status(404)
+        .json({ error: "Course not found or user not enrolled" });
+    }
+
+    // Find assignments in the specified course
+    const assignments = await Assignment.find({
+      _id: { $in: course.assignments },
+    }).select("title description file");
+
+    res.status(200).json(assignments);
+  } catch (error) {
+    console.error("Failed to fetch assignments:", error);
+    res.status(500).json({ error: "Failed to fetch assignments" });
+  }
+});
+
 //get specific assignment
 router.get("/doctor/:doctorId/assignment/:assignmentId", async (req, res) => {
   try {
@@ -223,7 +249,10 @@ router.get("/assignments/:assignmentId/answers", [auth], async (req, res) => {
     }
 
     // Find all the submissions for the assignment
-    const submissions = await AssignmentSubmission.find();
+    const submissions = await AssignmentSubmission.find().populate({
+      path: "userId",
+      select: "lastName firstName",
+    });
 
     res.status(200).json(submissions);
   } catch (error) {
@@ -285,6 +314,42 @@ router.post(
     } catch (error) {
       console.error("Failed to update score:", error);
       res.status(500).json({ error: "Failed to update score" });
+    }
+  }
+);
+//get specifc assignment by user enroll in specfic course
+router.get(
+  "/course/:courseId/user/:userId/assignment/:assignmentId",
+  async (req, res) => {
+    try {
+      const courseId = req.params.courseId;
+      const userId = req.params.userId;
+      const assignmentId = req.params.assignmentId;
+
+      // Find the course by courseId and check if the user is enrolled
+      const course = await Course.findOne({ _id: courseId, enroll: userId });
+      if (!course) {
+        return res
+          .status(404)
+          .json({ error: "Course not found or user not enrolled" });
+      }
+
+      // Find the assignment within the course
+      const assignment = await Assignment.findOne({
+        _id: assignmentId,
+        _id: { $in: course.assignments },
+      }).select("title description file");
+
+      if (!assignment) {
+        return res
+          .status(404)
+          .json({ error: "Assignment not found in the specified course" });
+      }
+
+      res.status(200).json(assignment);
+    } catch (error) {
+      console.error("Failed to fetch assignment:", error);
+      res.status(500).json({ error: "Failed to fetch assignment" });
     }
   }
 );

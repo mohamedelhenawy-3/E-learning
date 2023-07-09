@@ -273,6 +273,10 @@ const courseInfo = async (req, res, next) => {
         path: "lectureId",
         select: "title",
       })
+      .populate({
+        path: "assignments",
+        select: "title description file doctorId",
+      })
       .select("lectureId quizzes doctorData courseName description");
 
     if (!course) {
@@ -365,7 +369,6 @@ const UpdateCourseData = async (req, res, next) => {
     next(error);
   }
 };
-
 
 module.exports = {
   getquizResponses,
