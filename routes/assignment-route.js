@@ -336,17 +336,21 @@ router.post(
     }
   }
 );
-//get specifc assignment by user enroll in specfic course
 router.get(
-  "/course/:courseId/user/:userId/assignment/:assignmentId",
+  "/course/:courseId/assignment/:assignmentId",
+  [auth],
   async (req, res) => {
     try {
       const courseId = req.params.courseId;
-      const userId = req.params.userId;
+      const userId = req.user.id;
       const assignmentId = req.params.assignmentId;
+      console.log("assignmentId", assignmentId);
 
       // Find the course by courseId and check if the user is enrolled
-      const course = await Course.findOne({ _id: courseId, enroll: userId });
+      const course = await Course.findOne({
+        _id: courseId,
+        enroll: userId,
+      });
       if (!course) {
         return res
           .status(404)
@@ -356,8 +360,10 @@ router.get(
       // Find the assignment within the course
       const assignment = await Assignment.findOne({
         _id: assignmentId,
+        doctorId: course.doctorData.doctorId,
         _id: { $in: course.assignments },
-      }).select("title description file");
+        $and: [{ _id: assignmentId }, { _id: { $in: course.assignments } }],
+      }).select("title description file doctorId");
 
       if (!assignment) {
         return res
