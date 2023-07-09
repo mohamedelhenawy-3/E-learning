@@ -347,7 +347,7 @@ const UpdateCourseData = async (req, res, next) => {
     course.courseName = courseName;
     course.description = description;
 
-    const updatedCourse = await course.save();
+    await course.save();
 
     // Update course data in all related lectures
     await Lec.updateMany(

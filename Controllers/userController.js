@@ -206,17 +206,16 @@ const updateProfile = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
   try {
-    const updateData = await User.findOneAndUpdate(
-      { id: req.params.userId },
-      {
-        $set: {
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-        },
-      }
-    );
-    await updateData.save();
-    res.status(200).json({ message: "profile data updated success" });
+    const userId = req.params.userId;
+    const { firstName, lastName } = req.body;
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new ErrorResponse("user not found"));
+    }
+    user.firstName = firstName;
+    user.lastName = lastName;
+    await user.save();
+    res.status(200).json({ message: "profile data updated success", user });
   } catch (err) {
     next(err);
   }
