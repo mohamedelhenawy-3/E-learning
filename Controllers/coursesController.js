@@ -366,6 +366,7 @@ const UpdateCourseData = async (req, res, next) => {
   }
 };
 
+
 module.exports = {
   getquizResponses,
   getCourse,

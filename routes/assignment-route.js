@@ -24,6 +24,34 @@ router.get("/doctor/:doctorId", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch assignments" });
   }
 });
+router.get(
+  "/course/:courseId/doctor/:doctorId/assignments",
+  async (req, res) => {
+    try {
+      const courseId = req.params.courseId;
+      const doctorId = req.params.doctorId;
+
+      // Find the course by courseId and check if it belongs to the specified doctor
+      const course = await Course.findOne({
+        _id: courseId,
+        "doctorData.doctorId": doctorId,
+      });
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+
+      // Find assignments in the specified course
+      const assignments = await Assignment.find({
+        _id: { $in: course.assignments },
+      }).select("title description file");
+
+      res.status(200).json(assignments);
+    } catch (error) {
+      console.error("Failed to fetch assignments:", error);
+      res.status(500).json({ error: "Failed to fetch assignments" });
+    }
+  }
+);
 //get specific assignment
 router.get("/doctor/:doctorId/assignment/:assignmentId", async (req, res) => {
   try {
@@ -106,7 +134,8 @@ router.post(
 
       // Upload the file to Filestack
       const fileUrl = await uploadFile(req.file.path);
-
+      console.log("req.file", req.file);
+      console.log(fileUrl);
       // Create a new assignment
       const newAssignment = new Assignment({
         title,
