@@ -4,7 +4,6 @@ const admin = require("../middlware/adminMiddleware");
 const { Course } = require("../Models/course-model");
 const Post = require("../Models/post-model");
 const Comment = require("../Models/comment-model");
-
 router.post("/courses/:courseId/posts", [auth], async (req, res, next) => {
   try {
     const courseId = req.params.courseId;
@@ -35,11 +34,54 @@ router.post("/courses/:courseId/posts", [auth], async (req, res, next) => {
     course.posts.push(post._id);
     await course.save();
 
-    res.status(201).json(post);
+    res.status(201).json({
+      _id: post._id,
+      user: post.user,
+      content: post.content,
+      course: post.course,
+      comments: post.comments,
+      createdAt: post.createdAt,
+    });
   } catch (err) {
     next(err);
   }
 });
+
+// router.post("/courses/:courseId/posts", [auth], async (req, res, next) => {
+//   try {
+//     const courseId = req.params.courseId;
+//     const userId = req.user.id; // Assuming you have implemented user authentication
+
+//     // Check if the user is enrolled in the course
+//     const course = await Course.findOne({ _id: courseId, enroll: userId });
+
+//     if (!course) {
+//       return res
+//         .status(404)
+//         .json({ error: "User is not enrolled in the course." });
+//     }
+
+//     // Create a new post
+//     const { content } = req.body;
+
+//     const post = new Post({
+//       user: userId,
+//       content,
+//       course: courseId,
+//     });
+
+//     // Save the post
+//     await post.save();
+
+//     // Add the post's ID to the course's posts array
+//     course.posts.push(post._id);
+//     await course.save();
+
+//     res.status(201).json(post);
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 router.get("/courses/:courseId/posts", [auth], async (req, res, next) => {
   try {
     const courseId = req.params.courseId;
