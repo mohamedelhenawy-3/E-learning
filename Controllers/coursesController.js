@@ -273,8 +273,9 @@ const courseInfo = async (req, res, next) => {
         path: "enroll",
         populate: {
           path: "profileimg",
+          select: "url",
         },
-        select: "url publicId",
+        select: "url publicId firstName",
       })
       .populate({
         path: "lectureId",
@@ -289,14 +290,24 @@ const courseInfo = async (req, res, next) => {
         populate: [
           {
             path: "comments",
-            populate: {
-              path: "user",
-              select: "firstName",
-            },
+            populate: [
+              {
+                path: "user",
+                select: "firstName",
+                populate: {
+                  path: "profileimg",
+                  select: "url",
+                },
+              },
+            ],
           },
           {
             path: "user",
-            select: "firstName",
+            select: "firstName profileimg",
+            populate: {
+              path: "profileimg",
+              select: "url",
+            },
           },
         ],
       })
