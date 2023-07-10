@@ -279,6 +279,63 @@ router.get(
   }
 );
 
+// router.post(
+//   "/courses/:courseId/assignments/:assignmentId/score",
+//   [auth],
+//   async (req, res) => {
+//     try {
+//       const courseId = req.params.courseId;
+//       const assignmentId = req.params.assignmentId;
+//       const { userId, score } = req.body;
+//       const doctorId = req.user.id;
+
+//       // Find the course by courseId
+//       const course = await Course.findById(courseId);
+
+//       // Check if the doctor is authorized to score assignments in this course
+//       if (course.doctorData.doctorId.toString() !== doctorId.toString()) {
+//         return res.status(403).json({ error: "Unauthorized" });
+//       }
+
+//       // Find the assignment by assignmentId
+//       const assignment = await Assignment.findById(assignmentId);
+
+//       // Find the user's assignment submission
+//       const submission = await AssignmentSubmission.findOne({
+//         assignmentId: assignmentId,
+//         userId: userId,
+//       });
+
+//       if (!submission) {
+//         return res
+//           .status(404)
+//           .json({ error: "User's assignment submission not found" });
+//       }
+
+//       // Update the score for the user's assignment response
+//       const response = assignment.assignmentResponses.find(
+//         (res) => res.submissionId.toString() === submission._id.toString()
+//       );
+
+//       if (response) {
+//         response.score = score;
+//       } else {
+//         assignment.assignmentResponses.push({
+//           userId: userId,
+//           submissionId: submission._id,
+//           score: score,
+//         });
+//       }
+
+//       await assignment.save();
+
+//       res.status(200).json({ message: "Score updated successfully" });
+//     } catch (error) {
+//       console.error("Failed to update score:", error);
+//       res.status(500).json({ error: "Failed to update score" });
+//     }
+//   }
+// );
 router.post(
   "/courses/:courseId/assignments/:assignmentId/score",
   [auth],
@@ -300,6 +357,19 @@ router.post(
       // Find the assignment by assignmentId
       const assignment = await Assignment.findById(assignmentId);
 
+      // Find the user's assignment response
+      const existingResponseIndex = assignment.assignmentResponses.findIndex(
+        (res) =>
+          res.submissionId.toString() === assignmentId.toString() &&
+          res.userId.toString() === userId.toString()
+      );
+
+      if (existingResponseIndex !== -1) {
+        return res
+          .status(400)
+          .json({ error: "Score already given for this user's assignment" });
+      }
+
       // Find the user's assignment submission
       const submission = await AssignmentSubmission.findOne({
         assignmentId: assignmentId,
@@ -312,20 +382,12 @@ router.post(
           .json({ error: "User's assignment submission not found" });
       }
 
-      // Update the score for the user's assignment response
-      const response = assignment.assignmentResponses.find(
-        (res) => res.submissionId.toString() === submission._id.toString()
-      );
-
-      if (response) {
-        response.score = score;
-      } else {
-        assignment.assignmentResponses.push({
-          userId: userId,
-          submissionId: submission._id,
-          score: score,
-        });
-      }
+      // Add the score to the assignment response
+      assignment.assignmentResponses.push({
+        userId: userId,
+        submissionId: submission._id,
+        score: score,
+      });
 
       await assignment.save();
 
@@ -336,6 +398,7 @@ router.post(
     }
   }
 );
+
 router.get(
   "/course/:courseId/assignment/:assignmentId",
   [auth],

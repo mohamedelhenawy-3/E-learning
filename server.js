@@ -22,7 +22,7 @@ app.use("/api/doctor", require("./routes/doctor-route"));
 app.use("/api/specialCode", require("./routes/specialCode-route"));
 app.use("/api/review", require("./routes/review-route"));
 app.use("/api/notification", require("./routes/notification-route"));
-app.use("/api", require("./routes/forgetresetPassword.js"));
+app.use("/api/forgetPass", require("./routes/forgetresetPassword.js"));
 app.use("/api/assignment", require("./routes/assignment-route"));
 app.use("/api/post", require("./routes/post-route"));
 app.use("/api/comment", require("./routes/comment-route"));
