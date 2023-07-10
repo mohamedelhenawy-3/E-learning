@@ -24,6 +24,35 @@ router.get("/doctor/:doctorId", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch assignments" });
   }
 });
+//get req for mobile app get all assignment for user that enroll in specfic course
+router.get(
+  "/course/:courseId/doctor/:doctorId/allassignments",
+  async (req, res) => {
+    try {
+      const courseId = req.params.courseId;
+      const doctorId = req.params.doctorId;
+
+      // Find the course by courseId and check if it belongs to the specified doctor
+      const course = await Course.findOne({
+        _id: courseId,
+        "doctorData.doctorId": doctorId,
+      });
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+
+      // Find assignments in the specified course
+      const assignmentsData = await Assignment.find({
+        _id: { $in: course.assignments },
+      }).select("title description file");
+
+      res.status(200).json({ allAssignments: { assignmentsData } });
+    } catch (error) {
+      console.error("Failed to fetch assignments:", error);
+      res.status(500).json({ error: "Failed to fetch assignments" });
+    }
+  }
+);
 router.get(
   "/course/:courseId/doctor/:doctorId/assignments",
   async (req, res) => {
@@ -46,6 +75,34 @@ router.get(
       }).select("title description file");
 
       res.status(200).json(assignments);
+    } catch (error) {
+      console.error("Failed to fetch assignments:", error);
+      res.status(500).json({ error: "Failed to fetch assignments" });
+    }
+  }
+);
+
+router.get(
+  "/course/:courseId/user/:userId/allassignments",
+  async (req, res) => {
+    try {
+      const courseId = req.params.courseId;
+      const userId = req.params.userId;
+
+      // Find the course by courseId and check if the user is enrolled
+      const course = await Course.findOne({ _id: courseId, enroll: userId });
+      if (!course) {
+        return res
+          .status(404)
+          .json({ error: "Course not found or user not enrolled" });
+      }
+
+      // Find assignments in the specified course
+      const assignmentsData = await Assignment.find({
+        _id: { $in: course.assignments },
+      }).select("title description file");
+
+      res.status(200).json({ allAssignments: { assignmentsData } });
     } catch (error) {
       console.error("Failed to fetch assignments:", error);
       res.status(500).json({ error: "Failed to fetch assignments" });
@@ -279,63 +336,42 @@ router.get(
   }
 );
 
-// router.post(
-//   "/courses/:courseId/assignments/:assignmentId/score",
-//   [auth],
-//   async (req, res) => {
-//     try {
-//       const courseId = req.params.courseId;
-//       const assignmentId = req.params.assignmentId;
-//       const { userId, score } = req.body;
-//       const doctorId = req.user.id;
+router.delete("/assignments/:assignmentId", [auth], async (req, res, next) => {
+  try {
+    const assignmentId = req.params.assignmentId;
 
-//       // Find the course by courseId
-//       const course = await Course.findById(courseId);
+    // Find the assignment by ID
+    const assignment = await Assignment.findById(assignmentId);
+    console.log("ass", assignment);
+    if (!assignment) {
+      return res.status(404).json({ message: "Assignment not found" });
+    }
+    console.log("id", req.user.id);
+    // Find the course that the assignment belongs to
+    const course = await Course.findOne({
+      assignments: assignmentId,
+      "doctorData.doctorId": req.user.id, // Assuming you have the doctor's ID in req.user.id
+    });
 
-//       // Check if the doctor is authorized to score assignments in this course
-//       if (course.doctorData.doctorId.toString() !== doctorId.toString()) {
-//         return res.status(403).json({ error: "Unauthorized" });
-//       }
+    if (!course) {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: You cannot delete this assignment" });
+    }
 
-//       // Find the assignment by assignmentId
-//       const assignment = await Assignment.findById(assignmentId);
+    // Remove the assignment and its related data
+    await assignment.remove();
 
-//       // Find the user's assignment submission
-//       const submission = await AssignmentSubmission.findOne({
-//         assignmentId: assignmentId,
-//         userId: userId,
-//       });
+    // Remove the assignment from the course's assignments array
+    course.assignments.pull(assignmentId);
+    await course.save();
 
-//       if (!submission) {
-//         return res
-//           .status(404)
-//           .json({ error: "User's assignment submission not found" });
-//       }
+    res.json({ message: "Assignment deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+});
 
-//       // Update the score for the user's assignment response
-//       const response = assignment.assignmentResponses.find(
-//         (res) => res.submissionId.toString() === submission._id.toString()
-//       );
-
-//       if (response) {
-//         response.score = score;
-//       } else {
-//         assignment.assignmentResponses.push({
-//           userId: userId,
-//           submissionId: submission._id,
-//           score: score,
-//         });
-//       }
-
-//       await assignment.save();
-
-//       res.status(200).json({ message: "Score updated successfully" });
-//     } catch (error) {
-//       console.error("Failed to update score:", error);
-//       res.status(500).json({ error: "Failed to update score" });
-//     }
-//   }
-// );
 router.post(
   "/courses/:courseId/assignments/:assignmentId/score",
   [auth],
