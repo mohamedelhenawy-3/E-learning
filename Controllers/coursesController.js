@@ -270,6 +270,13 @@ const courseInfo = async (req, res, next) => {
         select: "quizname",
       })
       .populate({
+        path: "enroll",
+        populate: {
+          path: "profileimg",
+        },
+        select: "url publicId",
+      })
+      .populate({
         path: "lectureId",
         select: "title",
       })
@@ -277,12 +284,28 @@ const courseInfo = async (req, res, next) => {
         path: "assignments",
         select: "title description file doctorId",
       })
+      .populate({
+        path: "posts",
+        populate: [
+          {
+            path: "comments",
+            populate: {
+              path: "user",
+              select: "firstName",
+            },
+          },
+          {
+            path: "user",
+            select: "firstName",
+          },
+        ],
+      })
       .select("lectureId quizzes doctorData courseName description");
 
     if (!course) {
       return next(
         new ErrorResponse(
-          `User is not enrolled in course with id ${courseId}`,
+          `User is not enrolled in the course with id ${courseId}`,
           404
         )
       );
@@ -293,6 +316,7 @@ const courseInfo = async (req, res, next) => {
     next(err);
   }
 };
+
 const courseInfomation = async (req, res, next) => {
   try {
     const courseId = req.params.courseId;

@@ -16,11 +16,16 @@ const postSchema = new Schema({
     ref: "Course",
     required: true,
   },
+  comments: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Comment",
+    },
+  ],
   createdAt: {
     type: Date,
     defult: Date.now(),
-  }
+  },
 });
-
 
 module.exports = mongoose.model("Post", postSchema);
