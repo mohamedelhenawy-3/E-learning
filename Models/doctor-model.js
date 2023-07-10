@@ -19,7 +19,14 @@ const doctorSchema = new Schema({
     type: String,
     required: true,
   },
-
+  resetPasswordToken: {
+    type: String,
+    default: null,
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: null,
+  },
   email: {
     type: String,
     required: true,
@@ -29,13 +36,19 @@ const doctorSchema = new Schema({
   },
   password: {
     type: String,
-    required: [true,'assword must contain at least one letter ([A-Za-z]) and one digit (\\d), and must be at least 5 characters long ({5,}'],
+    required: [
+      true,
+      "assword must contain at least one letter ([A-Za-z]) and one digit (\\d), and must be at least 5 characters long ({5,}",
+    ],
     minlength: 5,
     maxlength: 1500,
   },
   confirmPassword: {
     type: String,
-    required: [true,'assword must contain at least one letter ([A-Za-z]) and one digit (\\d), and must be at least 5 characters long ({5,}'],
+    required: [
+      true,
+      "assword must contain at least one letter ([A-Za-z]) and one digit (\\d), and must be at least 5 characters long ({5,}",
+    ],
     minlength: 5,
     maxlength: 1500,
   },
@@ -67,9 +80,15 @@ const validateDoctor = (doctor) => {
     firstName: Joi.string().required().min(1).max(255),
     lastName: Joi.string().required().min(1).max(255),
     code: Joi.string().required(),
-    email: Joi.string().required().email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }),
-    password: Joi.string().required().pattern(new RegExp('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$')),
-    confirmPassword: Joi.string().required().pattern(new RegExp('^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$')),
+    email: Joi.string()
+      .required()
+      .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }),
+    password: Joi.string()
+      .required()
+      .pattern(new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$")),
+    confirmPassword: Joi.string()
+      .required()
+      .pattern(new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$")),
     name: Joi.string(),
     profileimg: Joi.object({
       public_id: Joi.string(),
