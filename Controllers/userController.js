@@ -2,12 +2,10 @@ const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const { User, validateUser } = require("../Models/user-model");
 const { Course } = require("../Models/course-model");
-const { Assignment } = require("../Models/assinment-model");
-const {
-  AssignmentSubmission,
-} = require("../Models/assignmentSubmission-model");
-const { Comment } = require("../Models/comment-model");
-const { Post } = require("../Models/post-model");
+const Assignment = require("../Models/assinment-model");
+const AssignmentSubmission = require("../Models/assignmentSubmission-model");
+const Comment = require("../Models/comment-model");
+const Post = require("../Models/post-model");
 
 const Cloudinary = require("../utils/clouodinry");
 const ErrorResponse = require("../utils/errorResponse");
@@ -238,9 +236,8 @@ const getAllcourses = async (req, res, next) => {
 
 const removeUser = async (req, res, next) => {
   try {
-    const userId = req.params.id;
-
-    // Delete the user
+    const userId = req.params.userId;
+    console.log(userId);
     await User.findByIdAndDelete(userId);
 
     // Remove the user from enrolledCourses in Course model
@@ -263,6 +260,8 @@ const removeUser = async (req, res, next) => {
     next(err);
   }
 };
+
+module.exports = removeUser;
 
 module.exports = {
   SignUp,

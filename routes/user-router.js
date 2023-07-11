@@ -32,5 +32,5 @@ router.get("/:userId/userProfile", [auth], getUserProfile);
 //lecture view
 router.get("/:userId/:courseId/:lectureId", [auth], lecView);
 router.get("/allCourses/", [auth, admin], getAllcourses);
-router.delete("/specficUser/:userId", [admin], removeUser);
+router.delete("/specficUser/:userId", [auth, admin], removeUser);
 module.exports = router;
