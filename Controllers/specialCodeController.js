@@ -21,7 +21,16 @@ const addCode = async (req, res, next) => {
     next(err);
   }
 };
+const getallSpecialCode = async (req, res, next) => {
+  try {
+    const code = await Code.find();
+    if (!code) return res.json({ message: "not have any codes" });
 
+    res.status(200).json({ allcodes: code });
+  } catch (err) {
+    next(err);
+  }
+};
 const getallCodes = async (req, res, next) => {
   try {
     const code = await Code.find();
@@ -56,4 +65,5 @@ module.exports = {
   addCode,
   getCode,
   getallCodes,
+  getallSpecialCode,
 };
