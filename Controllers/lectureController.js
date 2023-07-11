@@ -91,38 +91,6 @@ const updatelectureData = async (req, res, next) => {
   }
 };
 
-// const updatelectureData = async (req, res, next) => {
-//   try {
-//     const lecture = await Lec.findById(req.params.lecId);
-//     // console.log(lecture.doctorData.doctorId)
-//     // console.log('idforuser',req.user.id)
-//     // console.log('doc',lecture.doctorData.docId)
-//     if (req.user.id == lecture.doctorData.doctorId) {
-//       const updatelecture = await Lec.findOneAndUpdate(
-//         { id: lecture._id },
-//         {
-//           $set: {
-//             title: req.body.title,
-//             description: req.body.description,
-//           },
-//         }
-//       );
-//       const course = await Course.findOne({ name: lecture.courseName });
-//       // Set duration to unknown since we are no longer calculating it
-//       await updatelecture.save();
-
-//       // Send notification to all subscribers of the course, if any
-//       const description = `new Lecture named "${lecture.title}" add  in "${course.courseName}" course.`;
-//       const send = await sendNotify(course._id, description);
-//       console.log(send);
-//       if (send) return res.json({ send: "update data done successful" });
-//     } else {
-//       res.send("You can only update your own lecture");
-//     }
-//   } catch (err) {
-//     next(err);
-//   }
-// };
 const getLecture = async (req, res, next) => {
   try {
     const { lectureId, courseId } = req.params;

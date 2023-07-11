@@ -3,8 +3,6 @@ const bcrypt = require("bcrypt");
 const { User, validateUser } = require("../Models/user-model");
 const Cloudinary = require("../utils/clouodinry");
 const ErrorResponse = require("../utils/errorResponse");
-const { Course } = require("../Models/course-model.js");
-const { Quiz } = require("../Models/quiz.model");
 const { Lec } = require("../Models/lec-model");
 
 const SignUp = async (req, res, next) => {
@@ -41,38 +39,6 @@ const SignUp = async (req, res, next) => {
   }
 };
 
-// const getUserProfile = async (req, res, next) => {
-//   try {
-//     const user = await User.findById(req.params.userId)
-//     if (!user) return next(new ErrorResponse("user doesnt exists "));
-
-//     // modify userProfile object to show required fields only
-//     const userProfile = {
-//       firstName: user.firstName,
-//       lastName: user.lastName,
-//       email: user.email,
-//       enrolledCourses: [],
-//       quizzes: [],
-//       profileimg: {},
-//       createdAt: user.createdAt
-//     };
-//     const enrolledCourses = await Course.find({ _id: { $in: user.enrolledCourses } }, { title: 1 });
-//     const quizzes = await Quiz.find({ userId: user._id }, { quizName: 1, usermark: 1 });
-//     userProfile.enrolledCourses = enrolledCourses;
-//     userProfile.quizzes = quizzes;
-
-//     if (user.profileimg && user.profileimg.url) {
-//       userProfile.profileimg = {
-//         public_id: user.profileimg.public_id,
-//         url: user.profileimg.url
-//       }
-//     }
-//     res.json(userProfile);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Server error');
-//   }
-// }
 const getUserProfile = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.userId)

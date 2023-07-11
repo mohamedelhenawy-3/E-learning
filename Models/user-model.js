@@ -124,7 +124,11 @@ const validateUser = (user) => {
       .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } }),
     password: Joi.string()
       .required()
-      .pattern(new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$")),
+      .pattern(new RegExp("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$"))
+      .messages({
+        "string.pattern.base":
+          "Invalid password. It must contain at least one alphabetical character (either uppercase or lowercase), at least one digit, and have a minimum length of five characters.",
+      }),
     confirmPassword: Joi.string().required(),
     cloudinary_id: Joi.string(),
     url: Joi.string(),
