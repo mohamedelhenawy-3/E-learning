@@ -158,34 +158,66 @@ const postCourse = async (req, res, next) => {
     next(err);
   }
 };
-
 const updateCourse = async (req, res, next) => {
   try {
     const courseId = req.params.id;
     const course = await Course.findById(courseId);
     if (!course) {
-      return next(new ErrorResponse("cant find this course"));
+      return next(new ErrorResponse("Cannot find this course"));
     }
 
-    const userId = req.user.id;
-    const user = await User.findById(userId);
+    const userEmail = req.body.email; // Get the user email from the request body
+    const user = await User.findOne({ email: userEmail });
     if (!user) {
-      return next(new ErrorResponse("cant find this use"));
+      return next(new ErrorResponse("Cannot find this user"));
+    }
+
+    // Check if the requester is an admin
+    if (!req.user.isAdmin) {
+      return res
+        .status(403)
+        .send("Access denied. Only admins can enroll users.");
     }
 
     if (user.enrolledCourses.includes(courseId)) {
-      await user.updateOne({ $pull: { enrolledCourses: courseId } });
-      await course.updateOne({ $pull: { enroll: userId } });
-      res.status(200).send("Unenrolled from course");
+      res.status(200).send("User is already enrolled in this course");
     } else {
       await user.updateOne({ $push: { enrolledCourses: courseId } });
-      await course.updateOne({ $push: { enroll: userId } });
-      res.status(200).send("Enrolled in course");
+      await course.updateOne({ $push: { enroll: user._id } });
+      res.status(200).send("User enrolled in course");
     }
   } catch (err) {
     next(err);
   }
 };
+
+// const updateCourse = async (req, res, next) => {
+//   try {
+//     const courseId = req.params.id;
+//     const course = await Course.findById(courseId);
+//     if (!course) {
+//       return next(new ErrorResponse("cant find this course"));
+//     }
+
+//     const userId = req.user.id;
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return next(new ErrorResponse("cant find this use"));
+//     }
+
+//     if (user.enrolledCourses.includes(courseId)) {
+//       await user.updateOne({ $pull: { enrolledCourses: courseId } });
+//       await course.updateOne({ $pull: { enroll: userId } });
+//       res.status(200).send("Unenrolled from course");
+//     } else {
+//       await user.updateOne({ $push: { enrolledCourses: courseId } });
+//       await course.updateOne({ $push: { enroll: userId } });
+//       res.status(200).send("Enrolled in course");
+//     }
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 const deleteCourse = async (req, res, next) => {
   try {
     const course = await Course.findById(req.params.courseId).populate(
