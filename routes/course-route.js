@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const auth = require("../middlware/authMiddleware");
+const admin = require("../middlware/adminMiddleware");
 const {
   getCourse,
   getCourses,
@@ -20,7 +21,7 @@ router.get("/:id", [auth], getCourse);
 router.post("/:docId", [auth], postCourse);
 router.put("/:id/enroll", [auth], updateCourse);
 router.delete("/:courseId", [auth], deleteCourse);
-router.get("/courses", [auth], getCourses);
+router.get("/admin/getCourses", [auth, admin], getCourses);
 router.get("/courseDetails/:courseId", [auth], courseDetails);
 router.get("/course-Details/:courseId", [auth], courseDet);
 router.get("/couseInfo/:courseId", [auth], courseInfo);

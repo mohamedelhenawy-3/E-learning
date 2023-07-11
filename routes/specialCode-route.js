@@ -1,24 +1,17 @@
 const router = require("express").Router();
-const admin=require('../middlware/adminMiddleware')
-const auth=require('../middlware/authMiddleware')
+const admin = require("../middlware/adminMiddleware");
+const auth = require("../middlware/authMiddleware");
 
+const {
+  addCode,
+  getCode,
+  getallCodes,
+  getAllcourses,
+} = require("../Controllers/specialCodeController");
 
+router.post("/:id", [auth, admin], addCode);
 
+router.get("/specialCode/:codeId/:adminId", [auth, admin], getCode);
+router.get("/specialCode", [auth, admin], getallCodes);
 
-const {addCode} = require("../Controllers/specialCodeController");
-
-     
-    
-router.post('/:id',[auth,admin],addCode)
-
-
-
-
-
-
-
-
-
-
-  
-module.exports = router
+module.exports = router;

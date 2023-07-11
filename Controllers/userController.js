@@ -217,6 +217,17 @@ const deleteProfilePicture = async (req, res, next) => {
   }
 };
 
+const getAllcourses = async (req, res, next) => {
+  try {
+    const Course = await Course.find();
+    if (!Course) res.status(401).json({ message: "courses not found" });
+
+    res.status(200).json(Course);
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   SignUp,
   getUsers,
@@ -225,5 +236,6 @@ module.exports = {
   deleteProfilePicture,
   enrolledCourses,
   getUserProfile,
+  getAllcourses,
   lecView: lecView,
 };

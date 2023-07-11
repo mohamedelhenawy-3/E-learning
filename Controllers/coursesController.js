@@ -226,9 +226,11 @@ const deleteCourse = async (req, res, next) => {
 };
 const getCourses = async (req, res) => {
   try {
-    const course = await Course.find();
-    if (!course) return next(new ErrorResponse(`Cant find any Courses`));
+    const course = await Course.find().select(
+      "duration averageRating description courseName"
+    );
 
+    if (!course) return next(new ErrorResponse(`Cant find any Courses`));
     res.status(200).json({ course });
   } catch (err) {
     next(err);

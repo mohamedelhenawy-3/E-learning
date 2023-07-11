@@ -1,9 +1,8 @@
-const router=require('express').Router();
-const admin=require('../middlware/adminMiddleware');
-const auth=require('../middlware/authMiddleware');
+const router = require("express").Router();
+const admin = require("../middlware/adminMiddleware");
+const auth = require("../middlware/authMiddleware");
 
-
-const Upload=require('../utils/multer')
+const Upload = require("../utils/multer");
 const {
   getUsers,
   SignUp,
@@ -12,36 +11,24 @@ const {
   updateUser,
   deleteProfilePicture,
   getUserProfile,
-  lecView
+  lecView,
+  getAllcourses,
 } = require("../Controllers/userController");
 
-router.get("/",[auth,admin],getUsers); 
+router.get("/", [auth, admin], getUsers);
 
-router.post("/signup",SignUp); 
-router.get("/enrolledCourses/:userId",[auth],enrolledCourses)
-router.put("/updateProfile/:userId",[auth],Upload.single('image'),updateProfile);
-router.put("/:userId",[auth],updateUser);
-router.delete("/:userId/profileImage",[auth],deleteProfilePicture)
-router.get('/:userId/userProfile',[auth],getUserProfile)
-//lecture view 
-router.get('/:userId/:courseId/:lectureId',[auth],lecView)
-
-module.exports=router;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+router.post("/signup", SignUp);
+router.get("/enrolledCourses/:userId", [auth], enrolledCourses);
+router.put(
+  "/updateProfile/:userId",
+  [auth],
+  Upload.single("image"),
+  updateProfile
+);
+router.put("/:userId", [auth], updateUser);
+router.delete("/:userId/profileImage", [auth], deleteProfilePicture);
+router.get("/:userId/userProfile", [auth], getUserProfile);
+//lecture view
+router.get("/:userId/:courseId/:lectureId", [auth], lecView);
+router.get("/allCourses", [auth, admin], getAllcourses);
+module.exports = router;
