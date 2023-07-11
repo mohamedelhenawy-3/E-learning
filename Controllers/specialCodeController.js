@@ -1,7 +1,6 @@
 const Code = require("../Models/specialCode-model");
 const { User } = require("../Models/user-model");
 
-
 function getRandom(length) {
   return Math.floor(
     Math.pow(10, length - 1) + Math.random() * 9 * Math.pow(10, length - 1)
@@ -11,11 +10,11 @@ function getRandom(length) {
 const addCode = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
-    console.log(user);
     const code = new Code({
       code: getRandom(9),
       emailadmin: user.email,
     });
+    console.log(req.user.isAdmin);
     const savedcode = await code.save();
     res.json(savedcode);
   } catch (err) {
@@ -57,5 +56,4 @@ module.exports = {
   addCode,
   getCode,
   getallCodes,
- 
 };

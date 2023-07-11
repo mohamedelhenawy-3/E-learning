@@ -13,6 +13,7 @@ const {
   getUserProfile,
   lecView,
   getAllcourses,
+  removeUser,
 } = require("../Controllers/userController");
 
 router.get("/", [auth, admin], getUsers);
@@ -30,5 +31,6 @@ router.delete("/:userId/profileImage", [auth], deleteProfilePicture);
 router.get("/:userId/userProfile", [auth], getUserProfile);
 //lecture view
 router.get("/:userId/:courseId/:lectureId", [auth], lecView);
-router.get("/allCourses", [auth, admin], getAllcourses);
+router.get("/allCourses/", [auth, admin], getAllcourses);
+router.delete("/specficUser/:userId", [admin], removeUser);
 module.exports = router;

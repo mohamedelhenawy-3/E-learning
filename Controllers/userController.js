@@ -1,6 +1,14 @@
 const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const { User, validateUser } = require("../Models/user-model");
+const { Course } = require("../Models/course-model");
+const { Assignment } = require("../Models/assinment-model");
+const {
+  AssignmentSubmission,
+} = require("../Models/assignmentSubmission-model");
+const { Comment } = require("../Models/comment-model");
+const { Post } = require("../Models/post-model");
+
 const Cloudinary = require("../utils/clouodinry");
 const ErrorResponse = require("../utils/errorResponse");
 const { Lec } = require("../Models/lec-model");
@@ -228,6 +236,34 @@ const getAllcourses = async (req, res, next) => {
   }
 };
 
+const removeUser = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    // Remove the user from enrolledCourses in Course model
+    await Course.updateMany({}, { $pull: { enroll: userId } });
+
+    // Remove the user from doctorId in Assignment model
+    await Assignment.updateMany({}, { $unset: { doctorId: userId } });
+
+    // Delete assignment submissions related to the user
+    await AssignmentSubmission.deleteMany({ userId: userId });
+
+    // Remove the user from user field in Comment model
+    await Comment.updateMany({}, { $unset: { user: userId } });
+
+    // Remove the user from user field in Post model
+    await Post.updateMany({}, { $unset: { user: userId } });
+
+    res.json({ message: "User and related data removed successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   SignUp,
   getUsers,
@@ -237,5 +273,6 @@ module.exports = {
   enrolledCourses,
   getUserProfile,
   getAllcourses,
+  removeUser,
   lecView: lecView,
 };
