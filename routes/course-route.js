@@ -14,6 +14,7 @@ const {
   courseInfo,
   courseInfomation,
   UpdateCourseData,
+  getusersEnrolled,
 } = require("../Controllers/coursesController");
 
 router.get("/:id", [auth], getCourse);
@@ -29,5 +30,5 @@ router.get("/doctor/couseInfo/:courseId", [auth], courseInfomation);
 router.get("/courses/:courseId/quizResponses", [auth], getquizResponses);
 router.get("/course/:id/quiz/:quizId/usermark", [auth], searchAboutUser);
 router.put("/updateCourseInfo/:courseId", [auth], UpdateCourseData);
-
+router.get("/:courseId/getusersEnrolled", [auth, admin], getusersEnrolled);
 module.exports = router;

@@ -190,6 +190,24 @@ const updateCourse = async (req, res, next) => {
     next(err);
   }
 };
+const getusersEnrolled = async (req, res, next) => {
+  try {
+    const course = await Course.findById(req.params.courseId)
+      .populate({
+        path: "enroll",
+        select: "firstName email lastName profileimg",
+      })
+      .select("enroll");
+
+    if (!course) {
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    res.status(200).json(course);
+  } catch (err) {
+    next(err);
+  }
+};
 
 // const updateCourse = async (req, res, next) => {
 //   try {
@@ -452,4 +470,5 @@ module.exports = {
   courseInfo,
   courseInfomation,
   UpdateCourseData,
+  getusersEnrolled,
 };
