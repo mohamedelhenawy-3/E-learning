@@ -21,13 +21,13 @@ const postResetDoc = async (req, res, next) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "mohamed.reda2211e@gmail.com",
-        pass: "txmhpcelwpsanobf",
+        user: "mindaplatform2023@gmail.com",
+        pass: "atclecefklwnqgwz",
       },
     });
     transporter.sendMail({
       to: req.body.email,
-      from: "mohamed.reda2211e@gmail.com",
+      from: "mindaplatform2023@gmail.com",
       subject: "Password reset",
       html: `
         <p>You requested a password reset</p>
@@ -98,13 +98,13 @@ const postReset = async (req, res, next) => {
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-        user: "mohamed.reda2211e@gmail.com",
-        pass: "txmhpcelwpsanobf",
+        user: "mindaplatform2023@gmail.com",
+        pass: "atclecefklwnqgwz",
       },
     });
     transporter.sendMail({
       to: req.body.email,
-      from: "mohamed.reda2211e@gmail.com",
+      from: "mindaplatform2023@gmail.com",
       subject: "Password reset",
       html: `
         <p>You requested a password reset</p>
