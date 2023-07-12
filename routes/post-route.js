@@ -34,14 +34,15 @@ router.post("/courses/:courseId/posts", [auth], async (req, res, next) => {
     course.posts.push(post._id);
     await course.save();
 
-    res.status(201).json({
-      _id: post._id,
-      user: post.user,
-      content: post.content,
-      course: post.course,
-      comments: post.comments,
-      createdAt: post.createdAt,
-    });
+    res.status(201).json(
+      post
+      // _id: post._id,
+      // user: post.user,
+      // content: post.content,
+      // course: post.course,
+      // comments: post.comments,
+      // createdAt: post.createdAt,
+    );
   } catch (err) {
     next(err);
   }

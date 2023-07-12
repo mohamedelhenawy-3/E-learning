@@ -237,7 +237,11 @@ const getAllcourses = async (req, res, next) => {
 const removeUser = async (req, res, next) => {
   try {
     const userId = req.params.userId;
-    console.log(userId);
+
+    // Delete user's posts
+    await Post.deleteMany({ user: userId });
+
+    // Delete the user
     await User.findByIdAndDelete(userId);
 
     // Remove the user from enrolledCourses in Course model
@@ -251,9 +255,6 @@ const removeUser = async (req, res, next) => {
 
     // Remove the user from user field in Comment model
     await Comment.updateMany({}, { $unset: { user: userId } });
-
-    // Remove the user from user field in Post model
-    await Post.updateMany({}, { $unset: { user: userId } });
 
     res.json({ message: "User and related data removed successfully" });
   } catch (err) {
