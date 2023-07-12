@@ -187,7 +187,7 @@ router.get(
       }
 
       // Find all comments in the post and retrieve only their content
-      const comments = await Comment.find({ post: postId }, "content");
+      const comments = await Comment.find();
 
       res.status(200).json(comments);
     } catch (err) {
@@ -222,7 +222,10 @@ router.get(
       }
 
       // Find all comments in the post and retrieve only their content
-      const comments = await Comment.find({ post: postId }, "content");
+      const comments = await Comment.find().populate({
+        path: "user",
+        select: "firstName lastName",
+      });
 
       const commentsResponse = {
         comments: comments,
