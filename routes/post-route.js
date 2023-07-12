@@ -83,6 +83,41 @@ router.post("/courses/:courseId/posts", [auth], async (req, res, next) => {
 //     next(err);
 //   }
 // });
+router.get(
+  "/courses/:courseId/posts/Mobile",
+  [auth],
+  async (req, res, next) => {
+    try {
+      const courseId = req.params.courseId;
+      const userId = req.user.id; // Assuming you have implemented user authentication
+
+      // Check if the user is enrolled in the course
+      const course = await Course.findOne({ _id: courseId, enroll: userId });
+
+      if (!course) {
+        return res
+          .status(404)
+          .json({ error: "User is not enrolled in the course." });
+      }
+
+      console.log(course);
+
+      // Find all posts in the course created by the user and populate the user field
+      const posts = await Post.find({
+        course: courseId,
+        user: userId,
+      }).populate("user", "firstName lastName");
+
+      const postsResponse = {
+        posts: posts,
+      };
+
+      res.status(200).json({ postsResponse: postsResponse });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 router.get("/courses/:courseId/posts", [auth], async (req, res, next) => {
   try {
     const courseId = req.params.courseId;

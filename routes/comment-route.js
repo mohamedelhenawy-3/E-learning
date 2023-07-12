@@ -196,4 +196,43 @@ router.get(
   }
 );
 
+router.get(
+  "/courses/:courseId/posts/:postId/comments/Mobile",
+  [auth],
+  async (req, res, next) => {
+    try {
+      const courseId = req.params.courseId;
+      const postId = req.params.postId;
+      const userId = req.user.id; // Assuming you have implemented user authentication
+
+      // Check if the user is enrolled in the course
+      const course = await Course.findOne({ _id: courseId, enroll: userId });
+
+      if (!course) {
+        return res
+          .status(404)
+          .json({ error: "User is not enrolled in the course." });
+      }
+
+      // Find the post and check if it belongs to the same course
+      const post = await Post.findOne({ _id: postId, course: courseId });
+
+      if (!post) {
+        return res.status(404).json({ error: "Post not found." });
+      }
+
+      // Find all comments in the post and retrieve only their content
+      const comments = await Comment.find({ post: postId }, "content");
+
+      const commentsResponse = {
+        comments: comments,
+      };
+
+      res.status(200).json({ commentsResponse: commentsResponse });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 module.exports = router;
