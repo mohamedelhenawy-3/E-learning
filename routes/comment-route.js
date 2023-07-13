@@ -222,13 +222,23 @@ router.get(
       }
 
       // Find all comments in the post and retrieve only their content
-      const comments = await Comment.find().populate({
-        path: "user",
-        select: "firstName lastName",
-      });
+      const comments = await Comment.find({ post: postId })
+        .populate({
+          path: "user",
+          select: "firstName lastName",
+        })
+        .populate({
+          path: "post",
+          select: "course",
+          match: { course: courseId },
+        });
+
+      const filteredComments = comments.filter(
+        (comment) => comment.post !== null
+      );
 
       const commentsResponse = {
-        comments: comments,
+        comments: filteredComments,
       };
 
       res.status(200).json({ commentsResponse: commentsResponse });
