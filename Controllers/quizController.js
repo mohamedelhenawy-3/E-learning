@@ -559,6 +559,7 @@ module.exports = {
   dataAboutUserSubmitQuiz,
   getQuiz,
   x,
+  checkQuizStatus,
   deleteQuiz,
   getQuizz,
   searchAboutUser,

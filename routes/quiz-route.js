@@ -6,6 +6,7 @@ const {
   dataAboutUserSubmitQuiz,
   getQuiz,
   x,
+  checkQuizStatus,
   searchAboutUser,
   deleteQuiz,
   getQuizz,
