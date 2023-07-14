@@ -61,7 +61,6 @@ const addQuiz = async (req, res, next) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 const submitAnswer = async (req, res, next) => {
   const { courseId, quizId } = req.params;
   const { answers } = req.body;
@@ -94,7 +93,7 @@ const submitAnswer = async (req, res, next) => {
     for (let i = 0; i < quiz.questions.length; i++) {
       const question = await Question.findById(quiz.questions[i]);
 
-      if (question.choose[answers[i]].isCorrect) {
+      if (answers[i] !== -1 && question.choose[answers[i]].isCorrect) {
         totalScore += question.mark;
       }
     }
@@ -134,6 +133,79 @@ const submitAnswer = async (req, res, next) => {
     next(err);
   }
 };
+
+// const submitAnswer = async (req, res, next) => {
+//   const { courseId, quizId } = req.params;
+//   const { answers } = req.body;
+//   try {
+//     const course = await Course.findById(courseId);
+//     const quiz = await Quiz.findById(quizId);
+//     if (!course) {
+//       return next(new ErrorResponse("Course not found."));
+//     }
+//     if (!quiz) {
+//       return next(new ErrorResponse("Quiz not found"));
+//     }
+//     const user = await User.findById(req.user.id);
+//     if (!user.enrolledCourses.includes(courseId)) {
+//       return next(new ErrorResponse("User is not enrolled in the course."));
+//     }
+//     const userQuiz = user.infoQuizs.find((q) => q.quizId === quizId);
+//     if (userQuiz) {
+//       return next(new ErrorResponse("User has already attempted the quiz."));
+//     }
+//     // Check if the authenticated user is the doctor who created the course
+//     if (course.doctorData.doctorId == user.id) {
+//       return next(
+//         new ErrorResponse(
+//           "Unauthorized access. Only the course creator can create quizzes for the course."
+//         )
+//       );
+//     }
+//     let totalScore = 0;
+//     for (let i = 0; i < quiz.questions.length; i++) {
+//       const question = await Question.findById(quiz.questions[i]);
+
+//       if (question.choose[answers[i]].isCorrect) {
+//         totalScore += question.mark;
+//       }
+//     }
+//     user.infoQuizs.push({ quizId, usermark: totalScore });
+//     await user.save();
+//     quiz.mark += totalScore;
+//     await quiz.save();
+//     // Calculate quiz mark and update totalMark field
+//     let quizMark = 0;
+//     for (let i = 0; i < quiz.questions.length; i++) {
+//       const question = await Question.findById(quiz.questions[i]);
+//       quizMark += question.mark;
+//     }
+//     quiz.quizmark = quizMark;
+//     await quiz.save();
+//     // Update quizResponses array in Course model
+//     const quizIndex = course.quizzes.findIndex((q) => q._id === quizId);
+//     const userIndex = course.quizResponses.findIndex(
+//       (q) => q.userId.toString() === user.id
+//     );
+//     if (quizIndex !== -1 && userIndex !== -1) {
+//       course.quizResponses[userIndex].marks = totalScore;
+//       course.quizResponses[userIndex].quizMark = quizMark;
+//       await course.save();
+//     } else {
+//       course.quizResponses.push({
+//         userId: user.id,
+//         quizId,
+//         marks: totalScore,
+//         quizMark,
+//       });
+//       await course.save();
+//     }
+//     const formattedMessage = `${totalScore}`.replace(/\s+/g, ""); // Remove spaces
+//     res.status(200).json(formattedMessage.toString());
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 const x = async (req, res, next) => {
   const course = await Course.findById(req.params.courseId);
   console.log("course", course);

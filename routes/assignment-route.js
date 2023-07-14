@@ -238,7 +238,6 @@ router.post(
     }
   }
 );
-//submision by user taht only enroll in this course
 router.post(
   "/courses/:courseId/assignments/:assignmentId/submit",
   [auth],
@@ -269,6 +268,17 @@ router.post(
       if (!assignment) {
         return res.status(404).json({ error: "Assignment not found" });
       }
+
+      // Check if the user has already submitted the assignment
+      const existingSubmission = assignment.submissions.find(
+        (submission) => submission.userId.toString() === userId.toString()
+      );
+      if (existingSubmission) {
+        return res
+          .status(403)
+          .json({ error: "User has already submitted the assignment" });
+      }
+
       const fileUrl = await uploadFile(req.file.path);
       // Create a new assignment submission
       const newSubmission = new AssignmentSubmission({
@@ -289,6 +299,58 @@ router.post(
     }
   }
 );
+
+//submision by user taht only enroll in this course
+// router.post(
+//   "/courses/:courseId/assignments/:assignmentId/submit",
+//   [auth],
+//   Upload.single("answerFile"),
+//   async (req, res) => {
+//     try {
+//       const courseId = req.params.courseId;
+//       const assignmentId = req.params.assignmentId;
+//       const userId = req.user.id; // Assuming the user is authenticated and the user ID is stored in req.user
+
+//       // Find the course by courseId
+//       const course = await Course.findById(courseId);
+
+//       if (!course) {
+//         return res.status(404).json({ error: "Course not found" });
+//       }
+
+//       // Check if the user is enrolled in the course
+//       if (!course.enroll.includes(userId)) {
+//         return res
+//           .status(403)
+//           .json({ error: "User is not enrolled in the course" });
+//       }
+
+//       // Find the assignment by assignmentId
+//       const assignment = await Assignment.findById(assignmentId);
+
+//       if (!assignment) {
+//         return res.status(404).json({ error: "Assignment not found" });
+//       }
+//       const fileUrl = await uploadFile(req.file.path);
+//       // Create a new assignment submission
+//       const newSubmission = new AssignmentSubmission({
+//         assignmentId,
+//         userId,
+//         answerFile: fileUrl, // Assuming you store the file path as the answerFile
+//       });
+
+//       // Add the submission to the assignment's submissions array
+//       assignment.submissions.push(newSubmission);
+//       await assignment.save();
+//       await newSubmission.save();
+
+//       res.status(201).json(newSubmission);
+//     } catch (error) {
+//       console.error("Failed to create assignment submission:", error);
+//       res.status(500).json({ error: "Failed to create assignment submission" });
+//     }
+//   }
+// );
 //get answers of users by doctor who create it
 router.get(
   "/courses/:courseId/assignments/:assignmentId/answers",
@@ -371,7 +433,7 @@ router.delete("/assignments/:assignmentId", [auth], async (req, res, next) => {
     next(error);
   }
 });
-
+//wait here z3aam
 router.post(
   "/courses/:courseId/assignments/:assignmentId/score",
   [auth],
@@ -477,7 +539,53 @@ router.get(
     }
   }
 );
+///update score from docto use
+router.put(
+  "/courses/:courseId/assignments/:assignmentId/score",
+  [auth],
+  async (req, res) => {
+    try {
+      const courseId = req.params.courseId;
+      const assignmentId = req.params.assignmentId;
+      const userId = req.body.userId; // User ID of the user who submitted the assignment
+      const score = req.body.score; // Updated score
 
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+      if (course.doctorData.doctorId == req.user.id) {
+        const assignment = course.assignments.find(
+          (assignment) => assignment._id.toString() === assignmentId.toString()
+        );
+        if (!assignment) {
+          return res.status(404).json({ error: "Assignment not found" });
+        }
+
+        const assignmentResponse = assignment.assignmentResponses.find(
+          (response) => response.userId.toString() === userId.toString()
+        );
+        if (!assignmentResponse) {
+          return res
+            .status(404)
+            .json({ error: "Assignment response not found" });
+        }
+
+        // Update the score
+        assignmentResponse.score = score;
+
+        await course.save();
+
+        res.json({ message: "Score updated successfully" });
+      } else {
+        return res.json({ message: "not related to this course" });
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 // Function to upload file to Filestack
 const uploadFile = (filePath) => {
   return new Promise((resolve, reject) => {
