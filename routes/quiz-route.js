@@ -12,7 +12,12 @@ const {
 } = require("../Controllers/quizController");
 
 router.post("/courses/:courseId/quizze", [auth], addQuiz);
-router.post("/courses/:courseId/quizzes/:quizId/submit", [auth], submitAnswer);
+router.post(
+  "/courses/:courseId/quizzes/:quizId/submit",
+  [auth],
+  [checkQuizStatus],
+  submitAnswer
+);
 router.get(
   "/courseId/:courseId/quizId/:quizId",
   [auth],
