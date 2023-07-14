@@ -46,7 +46,8 @@ const addQuiz = async (req, res, next) => {
       quizname: req.body.quizname,
       questions: questionsId,
       quizmark: quizmark,
-      courseId: course._id, // Assign the courseId to the quiz
+      courseId: course._id,
+      duration: req.body.duration, // Assign the courseId to the quiz
     });
 
     // Save the new quiz to the database and associate it with the course
@@ -449,3 +450,81 @@ module.exports = {
   getQuizz,
   searchAboutUser,
 };
+
+/*
+
+
+const addQuiz = async (req, res, next) => {
+  try {
+    // Retrieve the doctor creating the quiz from the JWT
+    const doctor = await Doctor.findById(req.user.id);
+    // Ensure the doctor exists and is authorized to create quizzes
+    if (!doctor) {
+      return next(new ErrorResponse("Unauthorized"));
+    }
+    // Retrieve the course to which the quiz belongs
+    const course = await Course.findById(req.params.courseId);
+    console.log("courseid", course._id);
+    // Ensure the course exists and is associated with the doctor creating the quiz
+    if (!course || course.doctorData.doctorId !== doctor.id) {
+      return next(
+        new ErrorResponse(
+          "Unauthorized access. Only the course creator can create quizzes for the course."
+        )
+      );
+    }
+    const questionsId = await Promise.all(
+      req.body.questions.map(async (question) => {
+        let newquestion = new Question({
+          title: question.title,
+          choose: question.choose,
+          mark: question.mark,
+        });
+        newquestion = await newquestion.save();
+        return newquestion;
+      })
+    );
+    const questionResolve = questionsId;
+    let quizmark = 0; // Initialize quizmark to 0
+
+    // Loop through the questions and add the marks to quizmark
+    for (let i = 0; i < questionResolve.length; i++) {
+      quizmark += questionResolve[i].mark;
+    }
+
+    // Extract the start time, end time, and day from the request body
+    const { startTime, endTime, day } = req.body;
+
+    const quiz = new Quiz({
+      quizname: req.body.quizname,
+      questions: questionsId,
+      quizmark: quizmark,
+      courseId: course._id, // Assign the courseId to the quiz
+      startTime: new Date(startTime), // Convert start time to Date object
+      endTime: new Date(endTime), // Convert end time to Date object
+    });
+
+    // Save the new quiz to the database and associate it with the course
+    await quiz.save();
+    course.quizzes.push(quiz._id);
+    await course.save();
+
+    // Return the newly created quiz document
+    res.status(201).json(quiz);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+*/
