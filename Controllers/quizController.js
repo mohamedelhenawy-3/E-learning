@@ -125,7 +125,7 @@ const addQuiz = async (req, res, next) => {
     await quiz.save();
     course.quizzes.push(quiz._id);
     await course.save();
-
+    console.log("efoiefioh");
     // Return the newly created quiz document
     res.status(201).json(quiz);
   } catch (err) {
