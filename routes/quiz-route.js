@@ -10,7 +10,6 @@ const {
   deleteQuiz,
   getQuizz,
 } = require("../Controllers/quizController");
-const checkQuizStatus = require("../middlware/mid");
 
 // Routes
 router.post("/courses/:courseId/quizzes", [auth], addQuiz);
