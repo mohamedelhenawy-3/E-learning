@@ -6,25 +6,22 @@ const {
   dataAboutUserSubmitQuiz,
   getQuiz,
   x,
-  checkQuizStatus,
   searchAboutUser,
   deleteQuiz,
   getQuizz,
 } = require("../Controllers/quizController");
+const checkQuizStatus = require("../middlware/mid");
 
-router.post("/courses/:courseId/quizze", [auth], addQuiz);
-router.post(
-  "/courses/:courseId/quizzes/:quizId/submit",
-  [auth],
-  [checkQuizStatus],
-  submitAnswer
-);
+// Routes
+router.post("/courses/:courseId/quizzes", [auth], addQuiz);
+router.post("/courses/:courseId/quizzes/:quizId/submit", [auth], submitAnswer);
 router.get(
   "/courseId/:courseId/quizId/:quizId",
   [auth],
   dataAboutUserSubmitQuiz
 );
 router.get("/:courseId", x);
+
 //by user
 router.get("/:Quizid/:Courseid", [auth], getQuiz);
 router.delete("/quizzes/:quizId", [auth], deleteQuiz);
@@ -34,5 +31,5 @@ router.get(
   [auth],
   searchAboutUser
 );
-
+router.get("/:courseId/:quizId", [auth], checkQuizStatus);
 module.exports = router;

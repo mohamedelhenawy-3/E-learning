@@ -4,75 +4,7 @@ const { Doctor } = require("../Models/doctor-model");
 const { Course } = require("../Models/course-model");
 const { User } = require("../Models/user-model");
 const ErrorResponse = require("../utils/errorResponse");
-// const addQuiz = async (req, res, next) => {
-//   try {
-//     // Retrieve the doctor creating the quiz from the JWT
-//     const doctor = await Doctor.findById(req.user.id);
-//     // Ensure the doctor exists and is authorized to create quizzes
-//     if (!doctor) {
-//       return next(new ErrorResponse("Unauthorized"));
-//     }
-//     // Retrieve the course to which the quiz belongs
-//     const course = await Course.findById(req.params.courseId);
-//     console.log("courseid", course._id);
-//     // Ensure the course exists and is associated with the doctor creating the quiz
-//     if (!course || course.doctorData.doctorId !== doctor.id) {
-//       return next(
-//         new ErrorResponse(
-//           "Unauthorized access. Only the course creator can create quizzes for the course."
-//         )
-//       );
-//     }
-//     const questionsId = await Promise.all(
-//       req.body.questions.map(async (question) => {
-//         let newquestion = new Question({
-//           title: question.title,
-//           choose: question.choose,
-//           mark: question.mark,
-//         });
-//         newquestion = await newquestion.save();
-//         return newquestion;
-//       })
-//     );
-//     const questionResolve = questionsId;
-//     let quizmark = 0; // Initialize quizmark to 0
 
-//     // Loop through the questions and add the marks to quizmark
-//     for (let i = 0; i < questionResolve.length; i++) {
-//       quizmark += questionResolve[i].mark;
-//     }
-
-//     const quiz = new Quiz({
-//       quizname: req.body.quizname,
-//       questions: questionsId,
-//       quizmark: quizmark,
-//       courseId: course._id,
-//       duration: req.body.duration, // Assign the courseId to the quiz
-//     });
-
-//     // Save the new quiz to the database and associate it with the course
-//     await quiz.save();
-//     course.quizzes.push(quiz._id);
-//     await course.save();
-
-//     // Return the newly created quiz document
-//     res.status(201).json(quiz);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// };
-
-// // Apply the middleware to the relevant routes
-// app.get('/quiz/:quizId', checkQuizStatus, (req, res, next) => {
-//   // Handle getting the quiz details
-//   // ...
-// });
-
-// app.post('/quiz/:quizId/submit', checkQuizStatus, (req, res, next) => {
-//   // Handle submitting quiz answers
-//   // ...
-// });
 const addQuiz = async (req, res, next) => {
   try {
     // Retrieve the doctor creating the quiz from the JWT
@@ -117,15 +49,13 @@ const addQuiz = async (req, res, next) => {
       quizmark: quizmark,
       courseId: course._id,
       duration: req.body.duration, // Assign the courseId to the quiz
-      startTime: req.body.startTime, // Add startTime to the quiz
-      endTime: req.body.endTime, // Add endTime to the quiz
     });
 
     // Save the new quiz to the database and associate it with the course
     await quiz.save();
     course.quizzes.push(quiz._id);
     await course.save();
-    console.log("efoiefioh");
+
     // Return the newly created quiz document
     res.status(201).json(quiz);
   } catch (err) {
@@ -134,40 +64,7 @@ const addQuiz = async (req, res, next) => {
   }
 };
 
-const checkQuizStatus = async (req, res, next) => {
-  const { quizId } = req.params;
-  const userId = req.user.id; // Assuming you can retrieve the user's ID from req.user.id
-
-  try {
-    const quiz = await Quiz.findById(quizId);
-    if (!quiz) {
-      return res.status(404).json({ message: "Quiz not found" });
-    }
-
-    const endTime = quiz.endTime;
-
-    // Compare the endTime with the current time
-    if (new Date() > new Date(endTime)) {
-      // If the current time is past the endTime, the quiz has expired
-      // Update the quiz status to hide it for regular users
-      if (userId !== quiz.courseId.doctorData.doctorId) {
-        quiz.isHidden = true; // Assuming you have a `isHidden` property in the Quiz model
-
-        // Save the updated quiz status to the database
-        await quiz.save();
-
-        return res.status(403).json({ message: "Quiz has expired" });
-      }
-    }
-
-    // If the quiz is still active, continue to the next middleware or route handler
-    next();
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
+//////////////////////////////////////////////////////////////////old
 const submitAnswer = async (req, res, next) => {
   const { courseId, quizId } = req.params;
   const { answers } = req.body;
@@ -188,137 +85,58 @@ const submitAnswer = async (req, res, next) => {
     if (userQuiz) {
       return next(new ErrorResponse("User has already attempted the quiz."));
     }
-
-    // Add the checkQuizStatus middleware here to validate the quiz status
-    checkQuizStatus(req, res, async () => {
-      // Proceed with the submitAnswer logic if the quiz is still active
-
-      // Check if the authenticated user is the doctor who created the course
-      if (course.doctorData.doctorId == user.id) {
-        return next(
-          new ErrorResponse(
-            "Unauthorized access. Only the course creator can create quizzes for the course."
-          )
-        );
-      }
-      let totalScore = 0;
-      for (let i = 0; i < quiz.questions.length; i++) {
-        const question = await Question.findById(quiz.questions[i]);
-
-        if (answers[i] !== -1 && question.choose[answers[i]].isCorrect) {
-          totalScore += question.mark;
-        }
-      }
-      user.infoQuizs.push({ quizId, usermark: totalScore });
-      await user.save();
-      quiz.mark += totalScore;
-      await quiz.save();
-      // Calculate quiz mark and update totalMark field
-      let quizMark = 0;
-      for (let i = 0; i < quiz.questions.length; i++) {
-        const question = await Question.findById(quiz.questions[i]);
-        quizMark += question.mark;
-      }
-      quiz.quizmark = quizMark;
-      await quiz.save();
-      // Update quizResponses array in Course model
-      const quizIndex = course.quizzes.findIndex((q) => q._id === quizId);
-      const userIndex = course.quizResponses.findIndex(
-        (q) => q.userId.toString() === user.id
+    // Check if the authenticated user is the doctor who created the course
+    if (course.doctorData.doctorId == user.id) {
+      return next(
+        new ErrorResponse(
+          "Unauthorized access. Only the course creator can create quizzes for the course."
+        )
       );
-      if (quizIndex !== -1 && userIndex !== -1) {
-        course.quizResponses[userIndex].marks = totalScore;
-        course.quizResponses[userIndex].quizMark = quizMark;
-        await course.save();
-      } else {
-        course.quizResponses.push({
-          userId: user.id,
-          quizId,
-          marks: totalScore,
-          quizMark,
-        });
-        await course.save();
+    }
+    let totalScore = 0;
+    for (let i = 0; i < quiz.questions.length; i++) {
+      const question = await Question.findById(quiz.questions[i]);
+
+      if (answers[i] !== -1 && question.choose[answers[i]].isCorrect) {
+        totalScore += question.mark;
       }
-      const formattedMessage = `${totalScore}`.replace(/\s+/g, ""); // Remove spaces
-      res.status(200).json(formattedMessage.toString());
-    });
+    }
+    user.infoQuizs.push({ quizId, usermark: totalScore });
+    await user.save();
+    quiz.mark += totalScore;
+    await quiz.save();
+    // Calculate quiz mark and update totalMark field
+    let quizMark = 0;
+    for (let i = 0; i < quiz.questions.length; i++) {
+      const question = await Question.findById(quiz.questions[i]);
+      quizMark += question.mark;
+    }
+    quiz.quizmark = quizMark;
+    await quiz.save();
+    // Update quizResponses array in Course model
+    const quizIndex = course.quizzes.findIndex((q) => q._id === quizId);
+    const userIndex = course.quizResponses.findIndex(
+      (q) => q.userId.toString() === user.id
+    );
+    if (quizIndex !== -1 && userIndex !== -1) {
+      course.quizResponses[userIndex].marks = totalScore;
+      course.quizResponses[userIndex].quizMark = quizMark;
+      await course.save();
+    } else {
+      course.quizResponses.push({
+        userId: user.id,
+        quizId,
+        marks: totalScore,
+        quizMark,
+      });
+      await course.save();
+    }
+    const formattedMessage = `${totalScore}`.replace(/\s+/g, ""); // Remove spaces
+    res.status(200).json(formattedMessage.toString());
   } catch (err) {
     next(err);
   }
 };
-
-// const submitAnswer = async (req, res, next) => {
-//   const { courseId, quizId } = req.params;
-//   const { answers } = req.body;
-//   try {
-//     const course = await Course.findById(courseId);
-//     const quiz = await Quiz.findById(quizId);
-//     if (!course) {
-//       return next(new ErrorResponse("Course not found."));
-//     }
-//     if (!quiz) {
-//       return next(new ErrorResponse("Quiz not found"));
-//     }
-//     const user = await User.findById(req.user.id);
-//     if (!user.enrolledCourses.includes(courseId)) {
-//       return next(new ErrorResponse("User is not enrolled in the course."));
-//     }
-//     const userQuiz = user.infoQuizs.find((q) => q.quizId === quizId);
-//     if (userQuiz) {
-//       return next(new ErrorResponse("User has already attempted the quiz."));
-//     }
-//     // Check if the authenticated user is the doctor who created the course
-//     if (course.doctorData.doctorId == user.id) {
-//       return next(
-//         new ErrorResponse(
-//           "Unauthorized access. Only the course creator can create quizzes for the course."
-//         )
-//       );
-//     }
-//     let totalScore = 0;
-//     for (let i = 0; i < quiz.questions.length; i++) {
-//       const question = await Question.findById(quiz.questions[i]);
-
-//       if (answers[i] !== -1 && question.choose[answers[i]].isCorrect) {
-//         totalScore += question.mark;
-//       }
-//     }
-//     user.infoQuizs.push({ quizId, usermark: totalScore });
-//     await user.save();
-//     quiz.mark += totalScore;
-//     await quiz.save();
-//     // Calculate quiz mark and update totalMark field
-//     let quizMark = 0;
-//     for (let i = 0; i < quiz.questions.length; i++) {
-//       const question = await Question.findById(quiz.questions[i]);
-//       quizMark += question.mark;
-//     }
-//     quiz.quizmark = quizMark;
-//     await quiz.save();
-//     // Update quizResponses array in Course model
-//     const quizIndex = course.quizzes.findIndex((q) => q._id === quizId);
-//     const userIndex = course.quizResponses.findIndex(
-//       (q) => q.userId.toString() === user.id
-//     );
-//     if (quizIndex !== -1 && userIndex !== -1) {
-//       course.quizResponses[userIndex].marks = totalScore;
-//       course.quizResponses[userIndex].quizMark = quizMark;
-//       await course.save();
-//     } else {
-//       course.quizResponses.push({
-//         userId: user.id,
-//         quizId,
-//         marks: totalScore,
-//         quizMark,
-//       });
-//       await course.save();
-//     }
-//     const formattedMessage = `${totalScore}`.replace(/\s+/g, ""); // Remove spaces
-//     res.status(200).json(formattedMessage.toString());
-//   } catch (err) {
-//     next(err);
-//   }
-// };
 
 const x = async (req, res, next) => {
   const course = await Course.findById(req.params.courseId);
@@ -559,86 +377,7 @@ module.exports = {
   dataAboutUserSubmitQuiz,
   getQuiz,
   x,
-  checkQuizStatus,
   deleteQuiz,
   getQuizz,
   searchAboutUser,
 };
-
-/*
-
-
-const addQuiz = async (req, res, next) => {
-  try {
-    // Retrieve the doctor creating the quiz from the JWT
-    const doctor = await Doctor.findById(req.user.id);
-    // Ensure the doctor exists and is authorized to create quizzes
-    if (!doctor) {
-      return next(new ErrorResponse("Unauthorized"));
-    }
-    // Retrieve the course to which the quiz belongs
-    const course = await Course.findById(req.params.courseId);
-    console.log("courseid", course._id);
-    // Ensure the course exists and is associated with the doctor creating the quiz
-    if (!course || course.doctorData.doctorId !== doctor.id) {
-      return next(
-        new ErrorResponse(
-          "Unauthorized access. Only the course creator can create quizzes for the course."
-        )
-      );
-    }
-    const questionsId = await Promise.all(
-      req.body.questions.map(async (question) => {
-        let newquestion = new Question({
-          title: question.title,
-          choose: question.choose,
-          mark: question.mark,
-        });
-        newquestion = await newquestion.save();
-        return newquestion;
-      })
-    );
-    const questionResolve = questionsId;
-    let quizmark = 0; // Initialize quizmark to 0
-
-    // Loop through the questions and add the marks to quizmark
-    for (let i = 0; i < questionResolve.length; i++) {
-      quizmark += questionResolve[i].mark;
-    }
-
-    // Extract the start time, end time, and day from the request body
-    const { startTime, endTime, day } = req.body;
-
-    const quiz = new Quiz({
-      quizname: req.body.quizname,
-      questions: questionsId,
-      quizmark: quizmark,
-      courseId: course._id, // Assign the courseId to the quiz
-      startTime: new Date(startTime), // Convert start time to Date object
-      endTime: new Date(endTime), // Convert end time to Date object
-    });
-
-    // Save the new quiz to the database and associate it with the course
-    await quiz.save();
-    course.quizzes.push(quiz._id);
-    await course.save();
-
-    // Return the newly created quiz document
-    res.status(201).json(quiz);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-*/

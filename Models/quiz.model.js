@@ -30,38 +30,6 @@ const quizSchema = new mongoose.Schema({
       message: "Please provide the time in the format HH:mm",
     },
   },
-  isHidden: {
-    type: Boolean,
-    default: false,
-  },
-  startTime: {
-    startTime: {
-      type: String,
-      // Validate the startTime format using a regular expression (HH:mm/YYYY-MM-DD)
-      validate: {
-        validator: function (value) {
-          return /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\/\d{4}-\d{2}-\d{2}$/.test(
-            value
-          );
-        },
-        message: "Please provide the startTime in the format HH:mm/YYYY-MM-DD",
-      },
-    },
-  },
-  endTime: {
-    startTime: {
-      type: String,
-      // Validate the startTime format using a regular expression (HH:mm/YYYY-MM-DD)
-      validate: {
-        validator: function (value) {
-          return /^(0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]\/\d{4}-\d{2}-\d{2}$/.test(
-            value
-          );
-        },
-        message: "Please provide the startTime in the format HH:mm/YYYY-MM-DD",
-      },
-    },
-  },
   createdAt: {
     type: Date,
     default: Date.now(),
