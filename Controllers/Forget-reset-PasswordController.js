@@ -169,6 +169,7 @@ const validatePassword = (user) => {
         "string.pattern.base":
           "Invalid password. It must contain at least one alphabetical character (either uppercase or lowercase), at least one digit, and have a minimum length of five characters.",
       }),
+    token: Joi.string().required(), // Add validation for the "token" field
   });
 
   return schema.validate(user);
