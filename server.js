@@ -28,7 +28,7 @@ app.use("/api/post", require("./routes/post-route"));
 app.use("/api/comment", require("./routes/comment-route"));
 
 app.all("*", (req, res, next) => {
-  next(new errorResponse(`Cant find this Route :${req.originalUrl}`, 400));
+  next(new errorResponse(`Cant find this Route ::${req.originalUrl}`, 400));
 });
 app.use(errorHandler);
 const url =
