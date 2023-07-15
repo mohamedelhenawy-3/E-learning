@@ -30,5 +30,5 @@ router.get(
   [auth],
   searchAboutUser
 );
-router.get("/:courseId/:quizId", [auth], checkQuizStatus);
+
 module.exports = router;

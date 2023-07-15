@@ -220,7 +220,7 @@ const getQuizz = async (req, res, next) => {
       if (!quiz) {
         return res.status(404).json({ error: "Quiz not found" });
       }
-      
+
       // Return the quiz
       res.json({ quiz });
     } else {
